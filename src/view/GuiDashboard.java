@@ -51,6 +51,7 @@ import java.awt.BorderLayout;
 import javax.swing.JProgressBar;
 import javax.swing.JTable;
 import javax.swing.JList;
+import javax.swing.JScrollPane;
 
 public class GuiDashboard {
 
@@ -65,6 +66,7 @@ public class GuiDashboard {
 	private JTextField textField_3;
 	private JTextField textField_4;
 	public JLabel lMain_Username;
+	private JList listFiles;
 	public static String username;
 	Vector<User> listFriend = null;
 	Vector<FileUser> listFile = null;
@@ -72,7 +74,6 @@ public class GuiDashboard {
 	String host = cs.host;
 	String regName = cs.regName;
 	JList listFriends;
-	JList listFiles;
 
 	/**
 	 * Launch the application.
@@ -249,9 +250,12 @@ public class GuiDashboard {
 		lblYourFiles.setBounds(6, 15, 103, 16);
 		panel_14.add(lblYourFiles);
 		
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBounds(6, 42, 349, 292);
+		panel_14.add(scrollPane);
+		
 		listFiles = new JList();
-		listFiles.setBounds(6, 43, 353, 296);
-		panel_14.add(listFiles);
+		scrollPane.setViewportView(listFiles);
 		
 		
 		JPanel panel_15 = new JPanel();

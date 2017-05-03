@@ -16,6 +16,7 @@ import controller.AES256Encryption;
 import controller.AESEncryption;
 import controller.DESEcryption;
 import controller.GenerateKeys;
+import controller.TripleDESEncryption;
 
 import javax.crypto.SecretKey;
 import javax.swing.JButton;
@@ -234,29 +235,51 @@ public class GuiDecryptFile {
 				System.out.println(cipherByte);
 				try {
 					PrivateKey privateKey  = getPrivateKey(privateKeyPath);
-					secKey =  gk.decryptAESSecretKey(cipherKeyText, privateKey);
+					
 					if(method.equals("AES-128")){
+						
+						secKey =  gk.decryptAESSecretKey(cipherKeyText, privateKey,"AES");
 						AESEncryption aes = new AESEncryption();
 						plainByte = aes.decrypt(cipherByte, secKey);
 						gk.writeToFile(destPath, plainByte);
+						
 					} else if(method.equals("AES-192")){
+						
+						secKey =  gk.decryptAESSecretKey(cipherKeyText, privateKey,"AES");
 						String strIv = "18A5Z/IsHs6g8/65sBxkCQ==";
 			            byte[] raw = secKey.getEncoded();
 			            String strKey = new String(Base64.encode(raw));
 						AES256Encryption aes256 = new AES256Encryption();
 						plainByte = aes256.decryptAES256(strKey, strIv, cipherByte);
 						gk.writeToFile(destPath, plainByte);
+						
 					}else if(method.equals("AES-256")){
+						
+						secKey =  gk.decryptAESSecretKey(cipherKeyText, privateKey,"AES");
 						String strIv = "18A5Z/IsHs6g8/65sBxkCQ==";
 			            byte[] raw = secKey.getEncoded();
 			            String strKey = new String(Base64.encode(raw));
 						AES256Encryption aes256 = new AES256Encryption();
 						plainByte = aes256.decryptAES256(strKey, strIv, cipherByte);
 						gk.writeToFile(destPath, plainByte);
+						
 					}else if(method.equals("DES")){
+						
 						System.out.println(method);
+						secKey =  gk.decryptAESSecretKey(cipherKeyText, privateKey,"DES");
+						String encodedKey = new String(Base64.encode(secKey.getEncoded()));
+						System.out.println("My DES key : "+encodedKey);
+						
 						DESEcryption des = new DESEcryption();
 						plainByte = des.decryptDES(cipherByte, secKey);
+						gk.writeToFile(destPath, plainByte);
+					}else if(method.equals("Triple DES")){
+						
+						System.out.println(method);
+						secKey =  gk.decryptAESSecretKey(cipherKeyText, privateKey,"TripleDES");
+
+						TripleDESEncryption tdes = new TripleDESEncryption();
+						plainByte = tdes.decrypt(cipherByte, secKey);
 						gk.writeToFile(destPath, plainByte);
 					}
 					Desktop desktop = Desktop.getDesktop();

@@ -53,7 +53,9 @@ import controller.GenerateKeys;
 import controller.RmiTransferClient;
 import rmitransfer.Server;
 import controller.StaticRI;
+import controller.TripleDESEncryption;
 import rmitransfer.TestClient;
+import test.TripleDESEcnryption;
 import modal.ComboItem;
 import modal.FileModal;
 import modal.User;
@@ -345,7 +347,9 @@ public class GuSendFiles {
 		comboBox.addItem(new ComboItem("AES 192-bit", "AES-192"));
 		comboBox.addItem(new ComboItem("AES 256-bit", "AES-256"));
 		comboBox.addItem(new ComboItem("DES", "DES"));
-		comboBox.addItem(new ComboItem("3DES", "3DES"));
+		comboBox.addItem(new ComboItem("Triple DES", "Triple DES"));
+		comboBox.addItem(new ComboItem("Blowfish", "Blowfish"));
+		
 		comboBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				//String s = (String)comboBox.getSelectedItem();
@@ -447,13 +451,25 @@ public class GuSendFiles {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
-
+						
 					}else if(method.equals("DES")){
 						//SecretKey secKey256;
 						try {
 							
-							SecretKey desSecKey = des.generateDESKey();
-							encryptDES(desSecKey);
+							//SecretKey desSecKey = des.generateDESKey();
+							encryptDES();
+							
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+
+					}else if(method.equals("Triple DES")){
+						//SecretKey secKey256;
+						try {
+							
+							//SecretKey desSecKey = des.generateDESKey();
+							encryptTripleDES();
 							
 						} catch (Exception e1) {
 							// TODO Auto-generated catch block
@@ -552,16 +568,19 @@ public class GuSendFiles {
 			e2.printStackTrace();
 		}
 	}
-	public void encryptDES(SecretKey secKey){
+	public void encryptDES(){
 		try{
 			
+			SecretKey myDesKey = des.generateDESKey();
+			String encodedKey = new String (Base64.encode(myDesKey.getEncoded()));
+			System.out.println("My DES key : "+encodedKey);
 			
-			byte[] encryptSecKey = gk.encryptAESSecretKey(publicKeyUser, secKey);
-			gk.writeToFile(pathKey, encryptSecKey);
+			byte[] encryptSecKey = gk.encryptAESSecretKey(publicKeyUser, myDesKey);
+			gk.writeToFile(pathKey, myDesKey.getEncoded());
 			fConvert.setFile(fileName);
 			
 			plainByte = fConvert.convertToByte(pathFile);
-			cipherByte = des.encryptDES(plainByte, secKey);
+			cipherByte = des.encryptDES(plainByte, myDesKey);
 			fm.setReceiveName(receiveName);
 			File f = new File("file/"+lMain_Username.getText()+"/"+dateS+"/"+fileName);
 			f.getParentFile().mkdirs();
@@ -671,6 +690,28 @@ public class GuSendFiles {
 			e1.printStackTrace();
 		}
 		
+	}
+	
+	public void encryptTripleDES(){
+		 File encryptedFile = new File("file/"+lMain_Username.getText()+"/"+dateS+"/"+fileName);
+		 encryptedFile.getParentFile().mkdirs();
+		 TripleDESEncryption tDES = new TripleDESEncryption();
+		 try{
+			 String random = tDES.getSaltString();
+			 SecretKey sk = tDES.generateTripleDESKey(random);
+			 byte[] encryptSecKey = gk.encryptAESSecretKey(publicKeyUser, sk);
+			 gk.writeToFile(pathKey, encryptSecKey);
+			 plainByte = fConvert.convertToByte(pathFile);
+			 byte[] encryptedByte = tDES.encrypt(plainByte, sk);
+            FileOutputStream fos = new FileOutputStream(encryptedFile);
+			fos.write(encryptedByte);
+			fos.close();
+			
+			 
+			 
+		 }catch (Exception e){
+			 e.printStackTrace();
+		 }
 	}
 	
 	

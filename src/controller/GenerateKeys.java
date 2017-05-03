@@ -70,7 +70,7 @@ public class GenerateKeys {
 	    }
 	    return key;
 	}
-	public SecretKey decryptAESSecretKey(byte[] data,PrivateKey priKey){
+	public SecretKey decryptAESSecretKey(byte[] data,PrivateKey priKey,String method){
         SecretKey key = null;
         PrivateKey privKey = null;
         Cipher cipher = null;
@@ -79,7 +79,7 @@ public class GenerateKeys {
             privKey = priKey;
             cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, privKey );
-            key = new SecretKeySpec ( cipher.doFinal(data), "AES" );
+            key = new SecretKeySpec ( cipher.doFinal(data), method );
         }
         catch(Exception e)
         {
