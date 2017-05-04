@@ -14,6 +14,7 @@ import com.hazelcast.util.Base64;
 
 import controller.AES256Encryption;
 import controller.AESEncryption;
+import controller.BlowfishEncryption;
 import controller.DESEcryption;
 import controller.GenerateKeys;
 import controller.TripleDESEncryption;
@@ -273,14 +274,22 @@ public class GuiDecryptFile {
 						DESEcryption des = new DESEcryption();
 						plainByte = des.decryptDES(cipherByte, secKey);
 						gk.writeToFile(destPath, plainByte);
+						
 					}else if(method.equals("Triple DES")){
 						
 						System.out.println(method);
 						secKey =  gk.decryptAESSecretKey(cipherKeyText, privateKey,"TripleDES");
-
 						TripleDESEncryption tdes = new TripleDESEncryption();
 						plainByte = tdes.decrypt(cipherByte, secKey);
 						gk.writeToFile(destPath, plainByte);
+						
+					}else if(method.equals("Blowfish")){
+						
+						System.out.println(method);
+						secKey =  gk.decryptAESSecretKey(cipherKeyText, privateKey,"Blowfish");
+						BlowfishEncryption bf = new BlowfishEncryption();
+						bf.decrypt(fileDirectory, destPath, secKey);
+						
 					}
 					Desktop desktop = Desktop.getDesktop();
 					desktop.open(new File(destPath));

@@ -45,6 +45,7 @@ import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
 
 import controller.AES256Encryption;
 import controller.AESEncryption;
+import controller.BlowfishEncryption;
 import controller.ConfigServer;
 import controller.DESEcryption;
 import controller.FileConvert;
@@ -476,6 +477,18 @@ public class GuSendFiles {
 							e1.printStackTrace();
 						}
 
+					}else if(method.equals("Blowfish")){
+						//SecretKey secKey256;
+						try {
+							
+							//SecretKey desSecKey = des.generateDESKey();
+							encryptBlowFish();
+							
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+
 					}
 					
 					JOptionPane.showMessageDialog(null,"File has been encrypted. Please click send button to send", "Encryption", JOptionPane.WARNING_MESSAGE);
@@ -712,6 +725,21 @@ public class GuSendFiles {
 		 }catch (Exception e){
 			 e.printStackTrace();
 		 }
+	}
+	
+	public void encryptBlowFish(){
+		String encryptedFile = "file/"+lMain_Username.getText()+"/"+dateS+"/"+fileName;
+		BlowfishEncryption bf = new BlowfishEncryption();
+		try {
+			SecretKey skey = bf.getBlowfishKey();
+			 byte[] encryptSecKey = gk.encryptAESSecretKey(publicKeyUser, skey);
+			 gk.writeToFile(pathKey, encryptSecKey);
+			 bf.encrypt(pathFile, encryptedFile, skey);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 	
 	
