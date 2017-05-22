@@ -127,95 +127,95 @@ public class GuiRegistration {
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 681, 639);
+		frame.setBounds(100, 100, 488, 542);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 		
 		JLabel lblRegistration = new JLabel("Registration");
 		lblRegistration.setFont(new Font("Candara", Font.BOLD, 28));
-		lblRegistration.setBounds(253, 11, 171, 44);
+		lblRegistration.setBounds(159, 11, 171, 44);
 		frame.getContentPane().add(lblRegistration);
 		
 		JLabel lblName = new JLabel("Full Name : ");
-		lblName.setBounds(154, 190, 104, 14);
+		lblName.setBounds(52, 190, 104, 14);
 		frame.getContentPane().add(lblName);
 		
 		JLabel lblUsername = new JLabel("Username : ");
-		lblUsername.setBounds(176, 102, 82, 14);
+		lblUsername.setBounds(52, 89, 82, 14);
 		frame.getContentPane().add(lblUsername);
 		
 		JLabel lblPassword = new JLabel("Password : ");
-		lblPassword.setBounds(176, 127, 82, 14);
+		lblPassword.setBounds(52, 121, 82, 14);
 		frame.getContentPane().add(lblPassword);
 		
 		JLabel lblConfirmPassword = new JLabel("Confirm Password :");
-		lblConfirmPassword.setBounds(154, 152, 130, 14);
+		lblConfirmPassword.setBounds(10, 152, 131, 14);
 		frame.getContentPane().add(lblConfirmPassword);
 		
 		username_textField = new JTextField();
 		username_textField.setFont(new Font("Candara", Font.PLAIN, 12));
-		username_textField.setBounds(280, 93, 300, 20);
+		username_textField.setBounds(156, 80, 300, 31);
 		frame.getContentPane().add(username_textField);
 		username_textField.setColumns(10);
 		
 		fullName_textField = new JTextField();
-		fullName_textField.setBounds(280, 187, 300, 20);
+		fullName_textField.setBounds(156, 185, 300, 31);
 		frame.getContentPane().add(fullName_textField);
 		fullName_textField.setColumns(10);
 		
 		ic_textField = new JTextField();
-		ic_textField.setBounds(280, 218, 300, 20);
+		ic_textField.setBounds(156, 220, 300, 31);
 		frame.getContentPane().add(ic_textField);
 		ic_textField.setColumns(10);
 		
 		phoneNo_textField = new JTextField();
-		phoneNo_textField.setBounds(280, 249, 300, 20);
+		phoneNo_textField.setBounds(156, 255, 300, 31);
 		frame.getContentPane().add(phoneNo_textField);
 		phoneNo_textField.setColumns(10);
 		
 		email_textField = new JTextField();
 		email_textField.setText("");
-		email_textField.setBounds(280, 280, 300, 20);
+		email_textField.setBounds(156, 290, 300, 31);
 		frame.getContentPane().add(email_textField);
 		email_textField.setColumns(10);
 		
 		passwordField = new JPasswordField();
-		passwordField.setBounds(280, 124, 300, 20);
+		passwordField.setBounds(156, 115, 300, 31);
 		frame.getContentPane().add(passwordField);
 		
 		confirmPasswordField = new JPasswordField();
-		confirmPasswordField.setBounds(280, 152, 300, 20);
+		confirmPasswordField.setBounds(156, 150, 300, 31);
 		frame.getContentPane().add(confirmPasswordField);
 		
 		JLabel lblIc = new JLabel("IC :");
-		lblIc.setBounds(164, 221, 64, 14);
+		lblIc.setBounds(86, 221, 18, 14);
 		frame.getContentPane().add(lblIc);
 		
 		JLabel lblPhoneNumber = new JLabel("Phone Number: ");
-		lblPhoneNumber.setBounds(154, 252, 104, 14);
+		lblPhoneNumber.setBounds(30, 252, 104, 14);
 		frame.getContentPane().add(lblPhoneNumber);
 		
 		JLabel lblEmail = new JLabel("Email :");
-		lblEmail.setBounds(176, 283, 70, 14);
+		lblEmail.setBounds(72, 298, 70, 14);
 		frame.getContentPane().add(lblEmail);
 		
 		address1_textField = new JTextField();
-		address1_textField.setBounds(280, 322, 300, 20);
+		address1_textField.setBounds(156, 332, 300, 31);
 		frame.getContentPane().add(address1_textField);
 		address1_textField.setColumns(10);
 		
 		address2_textField = new JTextField();
-		address2_textField.setBounds(280, 353, 300, 20);
+		address2_textField.setBounds(156, 364, 300, 31);
 		frame.getContentPane().add(address2_textField);
 		address2_textField.setColumns(10);
 		
 		JLabel lblAddress = new JLabel("Address : ");
-		lblAddress.setBounds(164, 325, 94, 14);
+		lblAddress.setBounds(62, 340, 94, 14);
 		frame.getContentPane().add(lblAddress);
 		
 		address3_textField = new JTextField();
 		address3_textField.setColumns(10);
-		address3_textField.setBounds(280, 384, 300, 20);
+		address3_textField.setBounds(156, 395, 300, 31);
 		frame.getContentPane().add(address3_textField);
 		
 		JButton btnRegister = new JButton("Register");
@@ -279,7 +279,7 @@ public class GuiRegistration {
 				
 			}
 		});
-		btnRegister.setBounds(184, 456, 89, 23);
+		btnRegister.setBounds(27, 456, 194, 36);
 		frame.getContentPane().add(btnRegister);
 		
 		JButton btnCancel = new JButton("Cancel");
@@ -289,7 +289,7 @@ public class GuiRegistration {
 				
 			}
 		});
-		btnCancel.setBounds(283, 456, 89, 23);
+		btnCancel.setBounds(256, 456, 194, 36);
 		frame.getContentPane().add(btnCancel);
 	}
 }

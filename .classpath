@@ -8,5 +8,6 @@
 	<classpathentry kind="lib" path="D:/Java Project/CS/PerfectCryptServer/rmiio-2.1.2.jar"/>
 	<classpathentry kind="lib" path="D:/Java Project/CS/TestAESExample/lib/commons-codec-1.10/commons-codec-1.10.jar"/>
 	<classpathentry kind="lib" path="D:/Java Project/CS/lib/hazelcast-3.8.1/hazelcast-3.8.1.jar"/>
+	<classpathentry kind="lib" path="D:/Java Project/CS/PerfectCrypt/lib/bcprov-ext-jdk15on-156.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

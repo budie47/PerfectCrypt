@@ -194,9 +194,9 @@ public class GuiDashboard {
 		menu.add(btnSend);
 		Dimension size = btnSend.getSize();
 
-		JButton btnReceive = new JButton("");
+		JButton btnReceive = new JButton("Open Directoy");
 		btnReceive.setForeground(Color.BLACK);
-		btnReceive.setBackground(SystemColor.control);
+		btnReceive.setBackground(Color.LIGHT_GRAY);
 		btnReceive.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				menu.setVisible(false);
@@ -275,7 +275,7 @@ public class GuiDashboard {
 		listFriends.setBounds(6, 66, 271, 207);
 		panel_15.add(listFriends);
 
-		JButton btnNewButton_3 = new JButton("Retrive Friend");
+		JButton btnNewButton_3 = new JButton("Refresh");
 		btnNewButton_3.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try{
@@ -293,7 +293,7 @@ public class GuiDashboard {
 				}
 			}
 		});
-		btnNewButton_3.setBounds(160, 30, 117, 28);
+		btnNewButton_3.setBounds(187, 30, 90, 28);
 		panel_15.add(btnNewButton_3);
 		
 		btnAddFriend.addActionListener(new ActionListener() {
