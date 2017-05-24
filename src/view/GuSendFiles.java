@@ -78,7 +78,6 @@ public class GuSendFiles {
 
 	public JFrame frame;
 	private JTextField tFileName;
-	private JTextField textField;
 	JButton btnSend;
 	JButton btnEncrypt;
 	JComboBox comboBox;
@@ -109,6 +108,8 @@ public class GuSendFiles {
 	String pathFile;
 	AESEncryption aes = new AESEncryption();
 	DESEcryption des = new DESEcryption();
+	Vector<User> resultUser = null;
+	private User user;
 	
 	/**
 	 * Launch the application.
@@ -261,44 +262,60 @@ public class GuSendFiles {
 		JPanel panel_3 = new JPanel();
 		panel_3.setLayout(null);
 		panel_3.setBackground(Color.LIGHT_GRAY);
-		panel_3.setBounds(152, 81, 287, 62);
+		panel_3.setBounds(152, 81, 287, 114);
 		frame.getContentPane().add(panel_3);
 		
-		JLabel lblChooseFile = new JLabel("Choose File");
-		lblChooseFile.setFont(new Font("Candara", Font.BOLD, 16));
-		lblChooseFile.setBounds(10, 0, 160, 26);
-		panel_3.add(lblChooseFile);
+		JLabel lblSearch = new JLabel("Search Receiver");
+		lblSearch.setFont(new Font("Candara", Font.BOLD, 16));
+		lblSearch.setBounds(10, 0, 160, 26);
+		panel_3.add(lblSearch);
 		
-		tFileName = new JTextField();
-		tFileName.setBounds(10, 24, 170, 26);
-		panel_3.add(tFileName);
-		tFileName.setColumns(10);
+		JList list = new JList();
+		list.setBounds(152, 11, 125, 92);
+		panel_3.add(list);
 		
-		JButton btnNewButton = new JButton("Browse");
-		btnNewButton.addActionListener(new ActionListener() {
+		tSearchUser = new JTextField();
+		tSearchUser.setBounds(10, 25, 132, 31);
+		panel_3.add(tSearchUser);
+		tSearchUser.setColumns(10);
+		
+		JButton btnNewButton_1 = new JButton("Search");
+		btnNewButton_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-		        JFileChooser fileChooser = new JFileChooser();
-		        int returnValue = fileChooser.showOpenDialog(null);
-		        if (returnValue == JFileChooser.APPROVE_OPTION) {
-		          File selectedFile = fileChooser.getSelectedFile();
-		          tFileName.setText(selectedFile.getPath());
-		          lFile_name.setText(selectedFile.getName());
-		          //System.out.println(selectedFile.getName());
-		        }
+				try{
+					Registry creg = LocateRegistry.getRegistry(host);
+					StaticRI cstub = (StaticRI)creg.lookup(regName);
+					resultUser = cstub.searchFriend(tSearchUser.getText());
+					DefaultListModel listModel = new DefaultListModel();
+					for(User theUser :resultUser ){
+						listModel.addElement(theUser.getUsername());
+					}
+					list.setModel(listModel);
+					list.addMouseListener(new MouseAdapter() {
+						public void mouseClicked(MouseEvent e){
+							user = resultUser.get(list.getSelectedIndex());
+							lFriend_Name.setText(user.getUsername());
+
+						}
+					});
+					
+				}catch(Exception err){
+					
+				}
 			}
 		});
-		btnNewButton.setBounds(195, 26, 82, 23);
-		panel_3.add(btnNewButton);
+		btnNewButton_1.setBounds(31, 67, 89, 23);
+		panel_3.add(btnNewButton_1);
 		
 		JPanel panel_4 = new JPanel();
 		panel_4.setLayout(null);
 		panel_4.setBackground(Color.LIGHT_GRAY);
-		panel_4.setBounds(152, 147, 287, 200);
+		panel_4.setBounds(152, 201, 287, 146);
 		frame.getContentPane().add(panel_4);
 		
 		JLabel lblMethodEncryption = new JLabel("Method Encryption");
 		lblMethodEncryption.setFont(new Font("Candara", Font.BOLD, 16));
-		lblMethodEncryption.setBounds(10, 0, 160, 26);
+		lblMethodEncryption.setBounds(10, 50, 160, 26);
 		panel_4.add(lblMethodEncryption);
 		
 		JRadioButton rdbtnAsymetric = new JRadioButton("Secret-Key encryption");
@@ -308,39 +325,19 @@ public class GuSendFiles {
 				lblAsy.setText("Secret-Key encryption");
 				comboBox.setVisible(true);
 				comboBoxPub.setVisible(false);
-				//comboBox.removeAllItems();
-
-			
-			
 
 			}
 		});
-		rdbtnAsymetric.setBounds(10, 33, 256, 23);
+		rdbtnAsymetric.setBounds(10, 83, 256, 23);
 		panel_4.add(rdbtnAsymetric);
-		
-		JRadioButton rdbtnSymetric = new JRadioButton("Public-Key encryption");
-		rdbtnSymetric.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				lblEess.setText("");
-				lblAsy.setText("Public-Key encryption");
-				comboBoxPub.setVisible(true);
-				comboBox.setVisible(false);
-				//comboBox.removeAllItems();
-
-
-			}
-		});
-		rdbtnSymetric.setBounds(10, 66, 256, 23);
-		panel_4.add(rdbtnSymetric);
 		
 		ButtonGroup group = new ButtonGroup();
 		group.add(rdbtnAsymetric);
-		group.add(rdbtnSymetric);
 		
 		comboBox = new JComboBox();
 
 
-		comboBox.setBounds(10, 96, 256, 28);
+		comboBox.setBounds(10, 113, 256, 28);
 		panel_4.add(comboBox);
 		comboBox.setVisible(false);
 		comboBox.addItem(new ComboItem("Select Here", ""));
@@ -358,39 +355,44 @@ public class GuSendFiles {
 			}
 		});
 		
-		textField = new JTextField();
-		textField.setColumns(10);
-		textField.setBounds(10, 163, 170, 26);
-		panel_4.add(textField);
-		textField.setVisible(false);
-		
-		JButton button_1 = new JButton("Browse");
-		button_1.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-			}
-		});
-		button_1.setBounds(195, 165, 82, 23);
-		panel_4.add(button_1);
-		button_1.setVisible(false);
-		
-		JLabel lblLoadYourPrivate = new JLabel("Load The Key");
-		lblLoadYourPrivate.setFont(new Font("Candara", Font.BOLD, 16));
-		lblLoadYourPrivate.setBounds(10, 125, 160, 26);
-		panel_4.add(lblLoadYourPrivate);
-		lblLoadYourPrivate.setVisible(false);
-		
 		comboBoxPub = new JComboBox();
 		comboBoxPub.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				lblEess.setText(comboBoxPub.getSelectedItem().toString());
 			}
 		});
-		comboBoxPub.setBounds(10, 96, 256, 28);
+		comboBoxPub.setBounds(10, 113, 256, 28);
 		comboBoxPub.setVisible(false);
 		comboBoxPub.addItem(new ComboItem("Select Here", ""));
 		comboBoxPub.addItem(new ComboItem("EEC", "EEC"));
 		comboBoxPub.addItem(new ComboItem("RSA", "RSA"));
 		panel_4.add(comboBoxPub);
+		
+		tFileName = new JTextField();
+		tFileName.setBounds(10, 24, 170, 26);
+		panel_4.add(tFileName);
+		tFileName.setColumns(10);
+		
+		JButton btnNewButton = new JButton("Browse");
+		btnNewButton.setBounds(195, 26, 82, 23);
+		panel_4.add(btnNewButton);
+		
+		JLabel lblChooseFile = new JLabel("Choose File");
+		lblChooseFile.setBounds(10, 0, 160, 26);
+		panel_4.add(lblChooseFile);
+		lblChooseFile.setFont(new Font("Candara", Font.BOLD, 16));
+		btnNewButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+		        JFileChooser fileChooser = new JFileChooser();
+		        int returnValue = fileChooser.showOpenDialog(null);
+		        if (returnValue == JFileChooser.APPROVE_OPTION) {
+		          File selectedFile = fileChooser.getSelectedFile();
+		          tFileName.setText(selectedFile.getPath());
+		          lFile_name.setText(selectedFile.getName());
+		          //System.out.println(selectedFile.getName());
+		        }
+			}
+		});
 	
 		
 		btnEncrypt = new JButton("Encrypt");
@@ -539,6 +541,7 @@ public class GuSendFiles {
 
 	}
 	TestClient tc = new TestClient();
+	private JTextField tSearchUser;
 	
 	public boolean uploadFile(String filePath,String newFileName){
        boolean state = false;
@@ -741,9 +744,4 @@ public class GuSendFiles {
 		}
 		
 	}
-	
-	
-
-	
-
 }

@@ -255,6 +255,7 @@ public class GuiRegistration {
 						user.setAddress3(address3_textField.getText());
 						user.setEmail(email_textField.getText());
 						user.setPublicKey(publicKey);
+						user.setType("STAFF");
 						try
 						{
 							 Registry creg = LocateRegistry.getRegistry(host);

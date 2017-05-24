@@ -1,7 +1,6 @@
 package modal;
 
 import java.io.Serializable;
-import java.security.PrivateKey;
 import java.security.PublicKey;
 
 public class User implements Serializable {
@@ -15,9 +14,36 @@ public class User implements Serializable {
 	private String address1;
 	private String address2;
 	private String address3;
-
 	private String publicKey;
+	private String encryptedPrivateKey;
+	public String getEncryptedPrivateKey() {
+		return encryptedPrivateKey;
+	}
+
+	public void setEncryptedPrivateKey(String encryptedPrivateKey) {
+		this.encryptedPrivateKey = encryptedPrivateKey;
+	}
+
+	private String type;
+	private String MAC;
 	
+	
+	public String getMAC() {
+		return MAC;
+	}
+
+	public void setMAC(String mAC) {
+		MAC = mAC;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
 	public User(){
 		super();
 	}
@@ -107,7 +133,6 @@ public class User implements Serializable {
 	public void setAddress3(String address3) {
 		this.address3 = address3;
 	}
-
 
 	public String getPublicKey() {
 		return publicKey;

@@ -2,7 +2,7 @@ package modal;
 
 import java.io.Serializable;
 
-public class FileModal  implements Serializable{
+public class FileModal implements Serializable {
 
 	private byte[] fileByte;
 	private String fileName;

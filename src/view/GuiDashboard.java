@@ -13,10 +13,13 @@ import javax.swing.JPanel;
 
 import javax.swing.JButton;
 import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -190,20 +193,26 @@ public class GuiDashboard {
 				
 			}
 		});
-		btnSend.setBounds(387, 366, 137, 61);
+		btnSend.setBounds(387, 366, 84, 61);
 		menu.add(btnSend);
 		Dimension size = btnSend.getSize();
 
-		JButton btnReceive = new JButton("Open Directoy");
+		JButton btnReceive = new JButton("Directoy");
 		btnReceive.setForeground(Color.BLACK);
 		btnReceive.setBackground(Color.LIGHT_GRAY);
 		btnReceive.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				menu.setVisible(false);
-				receivePanel.setVisible(true);
+//				menu.setVisible(false);
+//				receivePanel.setVisible(true);
+				try {
+					Desktop.getDesktop().open(new File("download/plain/"+lMain_Username.getText()+"/"));
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			}
 		});
-		btnReceive.setBounds(536, 366, 134, 61);
+		btnReceive.setBounds(481, 366, 86, 61);
 		Dimension size1 = btnReceive.getSize();
 		
 		menu.add(btnReceive);
@@ -295,6 +304,22 @@ public class GuiDashboard {
 		});
 		btnNewButton_3.setBounds(187, 30, 90, 28);
 		panel_15.add(btnNewButton_3);
+		
+		JButton btnEncrypted = new JButton("Encrypted");
+		btnEncrypted.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					Desktop.getDesktop().open(new File("download/encrypted/"+lMain_Username.getText()+"/"));
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
+		btnEncrypted.setForeground(Color.BLACK);
+		btnEncrypted.setBackground(Color.LIGHT_GRAY);
+		btnEncrypted.setBounds(577, 366, 89, 61);
+		menu.add(btnEncrypted);
 		
 		btnAddFriend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
