@@ -9,6 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
 
 import javax.crypto.*;
 import javax.crypto.spec.*;
@@ -29,6 +31,24 @@ public class AES256Encryption {
          kgen.init(keyStrength);
          SecretKey skey = kgen.generateKey();
          return skey;
+	}
+	public static SecretKey generateAESPasswordKey(String password, String salt) throws NoSuchAlgorithmException{
+		SecretKey secret = null;
+		byte[] salt2 = salt.getBytes();
+		char[] passwordChar = password.toCharArray();
+		SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+		KeySpec spec = new PBEKeySpec(passwordChar, salt2, 65536, 128);
+		SecretKey tmp;
+		try {
+			tmp = factory.generateSecret(spec);
+			secret = new SecretKeySpec(tmp.getEncoded(), "AES");
+		} catch (InvalidKeySpecException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		return secret;
 	}
 
     public static String encrypt (String strKey, String strIv, String str) {

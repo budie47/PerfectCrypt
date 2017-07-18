@@ -22,12 +22,16 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Vector;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.SecretKey;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
@@ -37,6 +41,8 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+
+import org.bouncycastle.crypto.tls.DigitallySigned;
 
 import com.hazelcast.util.Base64;
 import com.healthmarketscience.rmiio.GZIPRemoteInputStream;
@@ -48,6 +54,7 @@ import controller.AESEncryption;
 import controller.BlowfishEncryption;
 import controller.ConfigServer;
 import controller.DESEcryption;
+import controller.DigitalSignature;
 import controller.FileConvert;
 import controller.FileSendingCS;
 import controller.GenerateKeys;
@@ -55,6 +62,7 @@ import controller.RmiTransferClient;
 import rmitransfer.Server;
 import controller.StaticRI;
 import controller.TripleDESEncryption;
+import controller.UserController;
 import rmitransfer.TestClient;
 import test.TripleDESEcnryption;
 import modal.ComboItem;
@@ -70,11 +78,13 @@ import javax.swing.JTextField;
 import javax.swing.JComboBox;
 import javax.swing.JRadioButton;
 import javax.swing.JList;
+import javax.swing.JPasswordField;
 
 public class GuSendFiles {
 	ConfigServer cs = new ConfigServer();
 	String host = cs.host;
 	String regName = cs.regName;
+	String ftpHost = cs.urlHostFTP;
 
 	public JFrame frame;
 	private JTextField tFileName;
@@ -110,6 +120,8 @@ public class GuSendFiles {
 	DESEcryption des = new DESEcryption();
 	Vector<User> resultUser = null;
 	private User user;
+	String decryptPrivateKey;
+	String encryptedPrivateKey = null;
 	
 	/**
 	 * Launch the application.
@@ -220,43 +232,43 @@ public class GuSendFiles {
 		
 		JPanel panel_2 = new JPanel();
 		panel_2.setBackground(Color.LIGHT_GRAY);
-		panel_2.setBounds(443, 81, 226, 266);
+		panel_2.setBounds(443, 201, 226, 146);
 		frame.getContentPane().add(panel_2);
 		panel_2.setLayout(null);
 		
 		JLabel lblSendTo = new JLabel("Send To :");
 		lblSendTo.setFont(new Font("Candara", Font.PLAIN, 16));
-		lblSendTo.setBounds(10, 11, 91, 26);
+		lblSendTo.setBounds(10, 0, 91, 26);
 		panel_2.add(lblSendTo);
 		
 		JLabel lblFileName = new JLabel("File Name :");
 		lblFileName.setFont(new Font("Candara", Font.PLAIN, 16));
-		lblFileName.setBounds(10, 81, 91, 26);
+		lblFileName.setBounds(10, 25, 91, 26);
 		panel_2.add(lblFileName);
 		
 		lFriend_Name = new JLabel("-");
 		lFriend_Name.setFont(new Font("Candara", Font.BOLD, 16));
-		lFriend_Name.setBounds(10, 44, 91, 26);
+		lFriend_Name.setBounds(77, 0, 139, 26);
 		panel_2.add(lFriend_Name);
 		
 		lFile_name = new JLabel("-");
 		lFile_name.setFont(new Font("Candara", Font.BOLD, 16));
-		lFile_name.setBounds(10, 118, 206, 26);
+		lFile_name.setBounds(91, 25, 206, 26);
 		panel_2.add(lFile_name);
 		
 		JLabel lblMethodEncryption_1 = new JLabel("Method Encryption");
 		lblMethodEncryption_1.setFont(new Font("Candara", Font.PLAIN, 16));
-		lblMethodEncryption_1.setBounds(10, 155, 192, 26);
+		lblMethodEncryption_1.setBounds(10, 51, 192, 26);
 		panel_2.add(lblMethodEncryption_1);
 		
 		lblAsy = new JLabel("-");
 		lblAsy.setFont(new Font("Candara", Font.BOLD, 16));
-		lblAsy.setBounds(10, 192, 192, 26);
+		lblAsy.setBounds(10, 78, 192, 26);
 		panel_2.add(lblAsy);
 		
 		lblEess = new JLabel("-");
 		lblEess.setFont(new Font("Candara", Font.BOLD, 16));
-		lblEess.setBounds(10, 229, 192, 26);
+		lblEess.setBounds(10, 108, 192, 26);
 		panel_2.add(lblEess);
 		
 		JPanel panel_3 = new JPanel();
@@ -396,8 +408,11 @@ public class GuSendFiles {
 	
 		
 		btnEncrypt = new JButton("Encrypt");
+		btnEncrypt.setEnabled(false);
 		btnEncrypt.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				
+
 				
 				pathKey = "file/"+lMain_Username.getText()+"/"+dateS+"/key";
 				saltPath = "file/"+lMain_Username.getText()+"/"+dateS+"/salt";
@@ -493,9 +508,13 @@ public class GuSendFiles {
 
 					}
 					
+
+					
 					JOptionPane.showMessageDialog(null,"File has been encrypted. Please click send button to send", "Encryption", JOptionPane.WARNING_MESSAGE);
 					btnEncrypt.setEnabled(false);
 					btnSend.setEnabled(true);
+					
+					
 
 				}
 		
@@ -509,6 +528,9 @@ public class GuSendFiles {
 			public void actionPerformed(ActionEvent e) {
 				
 				try{
+					byte[] digitalSign =  signDigitalSignature();
+					String b64DigitalSignature = new String(Base64.encode(digitalSign));
+					String digitalSignture = digitalSign.toString();
 					String senderPath = "file/"+lMain_Username.getText()+"/"+dateS+"/"+ fileName;
 					System.out.print(senderPath);
 					receiverPath = "file/"+lFriend_Name.getText()+"/"+dateS+"/"+ fileName;
@@ -520,9 +542,9 @@ public class GuSendFiles {
 					cstub.checkPath(checkPath);
 					fm.setPath(receiverPath);
 					System.out.println(fm);
-					cstub.saveData(method,receiveName,receiverPath);
+					cstub.saveData(method,receiveName,receiverPath,b64DigitalSignature,lMain_Username.getText());
 					
-		        	String url = "rmi://localhost:1100/server";
+		        	String url = ftpHost;
 					Server server = (Server) Naming.lookup(url);
 					RmiTransferClient.upload(server, new File(senderPath), new File(receiverPath));
 					RmiTransferClient.upload(server, new File(pathKey), new File(receiverKey));
@@ -538,10 +560,69 @@ public class GuSendFiles {
 		btnSend.setBounds(443, 358, 226, 42);
 		btnSend.setEnabled(false);
 		frame.getContentPane().add(btnSend);
+		
+		JPanel panel_5 = new JPanel();
+		panel_5.setBackground(Color.LIGHT_GRAY);
+		panel_5.setBounds(443, 81, 226, 114);
+		frame.getContentPane().add(panel_5);
+		panel_5.setLayout(null);
+		
+		JLabel lblLoadPrivateKey = new JLabel("Load Private Key");
+		lblLoadPrivateKey.setFont(new Font("Candara", Font.BOLD, 16));
+		lblLoadPrivateKey.setBounds(10, 0, 160, 26);
+		panel_5.add(lblLoadPrivateKey);
+		
+		JLabel lblTypeYourPassword = new JLabel("Type Your Password");
+		lblTypeYourPassword.setFont(new Font("Candara", Font.PLAIN, 14));
+		lblTypeYourPassword.setBounds(10, 36, 160, 26);
+		panel_5.add(lblTypeYourPassword);
+		
+		passwordField = new JPasswordField();
+		passwordField.setBounds(10, 61, 133, 31);
+		panel_5.add(passwordField);
+		
+		JButton btnNewButton_2 = new JButton("Load");
+		btnNewButton_2.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try{
+					//System.out.println(username);
+					
+					AES256Encryption aes = new AES256Encryption();
+					UserController uc = new UserController();
+					String stringPass = "null";
+					
+					char[] pass = passwordField.getPassword();
+					
+					for (int i = 0;i < pass.length; i++){			
+		
+						stringPass += Character.toString(pass[i]);
+					}
+					
+					 Registry creg = LocateRegistry.getRegistry(host,1099);
+			            StaticRI cstub = (StaticRI)creg.lookup(regName);
+			            encryptedPrivateKey = cstub.getUserEncryptedPrivateKey(lMain_Username.getText());
+
+			            decryptPrivateKey = uc.decryptPrivateKey(encryptedPrivateKey,stringPass);
+			            btnEncrypt.setEnabled(true);
+			            btnNewButton_2.setEnabled(false);
+			            //JOptionPane.showMessageDialog(null,"Password not match. Please Try Again", "Encryption", JOptionPane.WARNING_MESSAGE);
+			            
+				}catch (Exception ebp) {
+					// TODO: handle exception
+					
+					ebp.printStackTrace();
+
+				}
+				
+			}
+		});
+		btnNewButton_2.setBounds(147, 61, 69, 31);
+		panel_5.add(btnNewButton_2);
 
 	}
 	TestClient tc = new TestClient();
 	private JTextField tSearchUser;
+	private JPasswordField passwordField;
 	
 	public boolean uploadFile(String filePath,String newFileName){
        boolean state = false;
@@ -744,4 +825,21 @@ public class GuSendFiles {
 		}
 		
 	}
+	
+	public byte[] signDigitalSignature(){
+		String encryptedFile = "file/"+lMain_Username.getText()+"/"+dateS+"/"+fileName;
+		byte[] digitalSignature = null;
+		try{
+			DigitalSignature ds = new DigitalSignature();
+			PrivateKey privateKey  = ds.getPrivateKey(decryptPrivateKey);
+			byte[] plainByteDS = fConvert.convertToByte(pathFile);
+			digitalSignature = ds.sign(plainByteDS, privateKey);
+			
+		}catch(Exception err1){
+			err1.printStackTrace();
+		}
+		return digitalSignature;
+	}
+	
+
 }

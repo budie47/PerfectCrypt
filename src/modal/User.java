@@ -16,6 +16,25 @@ public class User implements Serializable {
 	private String address3;
 	private String publicKey;
 	private String encryptedPrivateKey;
+	private int branchId;
+	private String certificate;
+	
+	public int getBranchId() {
+		return branchId;
+	}
+
+	public void setBranchId(int branchId) {
+		this.branchId = branchId;
+	}
+
+	public String getCertificate() {
+		return certificate;
+	}
+
+	public void setCertificate(String certificate) {
+		this.certificate = certificate;
+	}
+
 	public String getEncryptedPrivateKey() {
 		return encryptedPrivateKey;
 	}

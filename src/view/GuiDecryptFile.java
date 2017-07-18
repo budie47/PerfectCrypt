@@ -7,6 +7,7 @@ import java.awt.Font;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
@@ -15,9 +16,14 @@ import com.hazelcast.util.Base64;
 import controller.AES256Encryption;
 import controller.AESEncryption;
 import controller.BlowfishEncryption;
+import controller.ConfigServer;
 import controller.DESEcryption;
+import controller.DigitalSignature;
+import controller.FileConvert;
 import controller.GenerateKeys;
+import controller.StaticRI;
 import controller.TripleDESEncryption;
+import controller.UserController;
 
 import javax.crypto.SecretKey;
 import javax.swing.JButton;
@@ -28,21 +34,34 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.awt.event.ActionEvent;
+import javax.swing.JPasswordField;
 
 public class GuiDecryptFile {
 
 	public JFrame frame;
-	private JTextField lblPrivateKey;
 	public JLabel lFileName;
 	public JLabel lFIleDir;
 	public JLabel lMethodE;
 	public String destPath;
+	private JPasswordField passwordField;
+	ConfigServer cs = new ConfigServer();
+	String host = cs.host;
+	String regName = cs.regName;
+	String encryptedPrivateKey = null;
+	String username = null;
+	String decryptPrivateKey;
+	byte[] digitalSignature;
+	PublicKey senderPK;
+	FileConvert fConvert = new FileConvert();
 
 	/**
 	 * Launch the application.
@@ -101,11 +120,13 @@ public class GuiDecryptFile {
 		return bytesArray;
 	}
 
-	public PrivateKey getPrivateKey(String path) throws Exception{
-		File pKey = new File(lblPrivateKey.getText());
-		byte[] pkey = getSecretKey(pKey);
+	public PrivateKey getPrivateKey(String decryptedPrivateKey) throws Exception{
+		
+		byte[] epkey = Base64.decode(decryptedPrivateKey.getBytes());
+
+		//byte[] pkey = decryptedPrivateKey.getBytes();
 		KeyFactory kf = KeyFactory.getInstance("RSA");
-		PrivateKey privateKey = kf.generatePrivate(new PKCS8EncodedKeySpec(pkey));
+		PrivateKey privateKey = kf.generatePrivate(new PKCS8EncodedKeySpec(epkey));
 		return privateKey;
 	}
 	
@@ -186,43 +207,24 @@ public class GuiDecryptFile {
 		lMethodE.setBounds(10, 198, 279, 25);
 		panel_1.add(lMethodE);
 		
-		lblPrivateKey = new JTextField();
-		lblPrivateKey.setEditable(false);
-		lblPrivateKey.setBounds(10, 259, 205, 31);
-		panel_1.add(lblPrivateKey);
-		lblPrivateKey.setColumns(10);
-		
 		JLabel lblLoadYourPrivate = new JLabel("Load Your Private Key");
 		lblLoadYourPrivate.setFont(new Font("Candara", Font.PLAIN, 15));
-		lblLoadYourPrivate.setBounds(10, 234, 173, 25);
+		lblLoadYourPrivate.setBounds(10, 222, 173, 25);
 		panel_1.add(lblLoadYourPrivate);
-		
-		JButton btnNewButton = new JButton("Browse");
-		btnNewButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-		        JFileChooser fileChooser = new JFileChooser();
-		        int returnValue = fileChooser.showOpenDialog(null);
-		        System.out.println(returnValue);
-		        if (returnValue == JFileChooser.APPROVE_OPTION) {
-		          File selectedFile = fileChooser.getSelectedFile();
-		          lblPrivateKey.setText(selectedFile.getPath());
-		          //lblPrivateKey.setText(selectedFile.getName());
-		        }
-			}
-		});
-		btnNewButton.setBounds(217, 259, 93, 31);
-		panel_1.add(btnNewButton);
 		
 		JButton btnDecryptCancel = new JButton("Cancel");
 		btnDecryptCancel.setBounds(10, 313, 140, 33);
 		panel_1.add(btnDecryptCancel);
 		
 		JButton btnDecrypt = new JButton("Decrypt");
+		btnDecrypt.setEnabled(false);
 		btnDecrypt.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String method = lMethodE.getText();
-				String privateKeyPath = lblPrivateKey.getText();
+				//String privateKeyPath = lblPrivateKey.getText();
 				SecretKey secKey;
+				boolean verifyDs = false;
+				DigitalSignature ds = new DigitalSignature();
 				byte[] cipherKeyText = null;
 				byte[] plainByte = null;
 				String fileDirectory = lFIleDir.getText();
@@ -235,13 +237,17 @@ public class GuiDecryptFile {
 				byte[] cipherByte = getFileByte(encryptedFile);
 				System.out.println(cipherByte);
 				try {
-					PrivateKey privateKey  = getPrivateKey(privateKeyPath);
+					PrivateKey privateKey  = getPrivateKey(decryptPrivateKey);
 					
 					if(method.equals("AES-128")){
 						
 						secKey =  gk.decryptAESSecretKey(cipherKeyText, privateKey,"AES");
 						AESEncryption aes = new AESEncryption();
 						plainByte = aes.decrypt(cipherByte, secKey);
+						verifyDs = ds.verifySignature(plainByte, digitalSignature, senderPK);
+						if(verifyDs){
+							JOptionPane.showMessageDialog(null,"Digital Signature for this file verified", "Digital Signature", JOptionPane.INFORMATION_MESSAGE);
+						}
 						gk.writeToFile(destPath, plainByte);
 						
 					} else if(method.equals("AES-192")){
@@ -262,6 +268,10 @@ public class GuiDecryptFile {
 			            String strKey = new String(Base64.encode(raw));
 						AES256Encryption aes256 = new AES256Encryption();
 						plainByte = aes256.decryptAES256(strKey, strIv, cipherByte);
+						verifyDs = ds.verifySignature(plainByte, digitalSignature, senderPK);
+						if(verifyDs){
+							JOptionPane.showMessageDialog(null,"Digital Signature for this file verified", "Digital Signature", JOptionPane.INFORMATION_MESSAGE);
+						}
 						gk.writeToFile(destPath, plainByte);
 						
 					}else if(method.equals("DES")){
@@ -273,6 +283,10 @@ public class GuiDecryptFile {
 						
 						DESEcryption des = new DESEcryption();
 						plainByte = des.decryptDES(cipherByte, secKey);
+						verifyDs = ds.verifySignature(plainByte, digitalSignature, senderPK);
+						if(verifyDs){
+							JOptionPane.showMessageDialog(null,"Digital Signature for this file verified", "Digital Signature", JOptionPane.INFORMATION_MESSAGE);
+						}
 						gk.writeToFile(destPath, plainByte);
 						
 					}else if(method.equals("Triple DES")){
@@ -281,6 +295,10 @@ public class GuiDecryptFile {
 						secKey =  gk.decryptAESSecretKey(cipherKeyText, privateKey,"TripleDES");
 						TripleDESEncryption tdes = new TripleDESEncryption();
 						plainByte = tdes.decrypt(cipherByte, secKey);
+						verifyDs = ds.verifySignature(plainByte, digitalSignature, senderPK);
+						if(verifyDs){
+							JOptionPane.showMessageDialog(null,"Digital Signature for this file verified", "Digital Signature", JOptionPane.INFORMATION_MESSAGE);
+						}
 						gk.writeToFile(destPath, plainByte);
 						
 					}else if(method.equals("Blowfish")){
@@ -289,6 +307,13 @@ public class GuiDecryptFile {
 						secKey =  gk.decryptAESSecretKey(cipherKeyText, privateKey,"Blowfish");
 						BlowfishEncryption bf = new BlowfishEncryption();
 						bf.decrypt(fileDirectory, destPath, secKey);
+						plainByte = fConvert.convertToByte(destPath);
+						
+						verifyDs = ds.verifySignature(plainByte, digitalSignature, senderPK);
+						if(verifyDs){
+							JOptionPane.showMessageDialog(null,"Digital Signature for this file verified", "Digital Signature", JOptionPane.INFORMATION_MESSAGE);
+						}
+						
 						
 					}
 					Desktop desktop = Desktop.getDesktop();
@@ -303,5 +328,46 @@ public class GuiDecryptFile {
 		});
 		btnDecrypt.setBounds(170, 313, 140, 33);
 		panel_1.add(btnDecrypt);
+		
+		passwordField = new JPasswordField();
+		passwordField.setBounds(10, 269, 205, 33);
+		panel_1.add(passwordField);
+		
+		JButton btnNewButton = new JButton("Load");
+		btnNewButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try{
+					System.out.println(username);
+					
+					AES256Encryption aes = new AES256Encryption();
+					UserController uc = new UserController();
+					String stringPass = "null";
+					
+					char[] pass = passwordField.getPassword();
+					
+					for (int i = 0;i < pass.length; i++){			
+		
+						stringPass += Character.toString(pass[i]);
+					}
+					
+					 Registry creg = LocateRegistry.getRegistry(host,1099);
+			            StaticRI cstub = (StaticRI)creg.lookup(regName);
+			            encryptedPrivateKey = cstub.getUserEncryptedPrivateKey(username);
+
+			            decryptPrivateKey = uc.decryptPrivateKey(encryptedPrivateKey,stringPass);
+			            btnDecrypt.setEnabled(true);
+			            
+				}catch(Exception e1){
+					e1.printStackTrace();
+				}
+		       }
+		});
+		btnNewButton.setBounds(221, 269, 89, 33);
+		panel_1.add(btnNewButton);
+		
+		JLabel lblTypeYourPassword = new JLabel("Type your password");
+		lblTypeYourPassword.setFont(new Font("Candara", Font.PLAIN, 12));
+		lblTypeYourPassword.setBounds(10, 251, 173, 25);
+		panel_1.add(lblTypeYourPassword);
 	}
 }

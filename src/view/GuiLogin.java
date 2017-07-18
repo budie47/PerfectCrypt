@@ -136,7 +136,8 @@ public class GuiLogin {
 				user.setPassword(stringPass); 
 				try
 				{
-		            Registry creg = LocateRegistry.getRegistry(host);
+					System.setProperty("java.rmi.server.hostname",cs.host);
+		            Registry creg = LocateRegistry.getRegistry(host,1099);
 		            StaticRI cstub = (StaticRI)creg.lookup(regName);
 		            result = cstub.loginUser(user);
 		            if(result){
@@ -156,6 +157,8 @@ public class GuiLogin {
 					
 				}catch(Exception err){
 					 JOptionPane.showMessageDialog(null,err, "Connection with Server Error :", JOptionPane.WARNING_MESSAGE);
+					 JOptionPane.showMessageDialog(null,cs.host, "Connection with Server Error :", JOptionPane.WARNING_MESSAGE);
+					 
 				}
 			}
 		});
@@ -168,6 +171,7 @@ public class GuiLogin {
 		frame.getContentPane().add(tPassword);
 		
 		JButton btnRegister = new JButton("Register Here");
+		btnRegister.setEnabled(false);
 		btnRegister.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				GuiRegistration register = new GuiRegistration();
@@ -175,6 +179,6 @@ public class GuiLogin {
 			}
 		});
 		btnRegister.setBounds(153, 158, 136, 23);
-		frame.getContentPane().add(btnRegister);
+		//frame.getContentPane().add(btnRegister);
 	}
 }

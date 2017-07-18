@@ -8,7 +8,10 @@ import java.rmi.registry.Registry;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 
+import javax.crypto.SecretKey;
 import javax.swing.JOptionPane;
+
+import com.hazelcast.util.Base64;
 
 import database.DbConn;
 
@@ -36,6 +39,22 @@ public class UserController {
 		}
 
 		return state;
+	}
+	public String decryptPrivateKey(String encryptedKey,String Password) throws Exception{
+		String decryptPrivateKey = "";
+        String strIv = "18A5Z/IsHs6g8/65sBxkCQ==";
+        String strKey = "";
+		
+		AES256Encryption aes = new AES256Encryption();
+        SecretKey skey;
+
+			skey = aes.generateAESPasswordKey(Password,strIv);
+	        byte[] raw = skey.getEncoded();
+	        strKey = new String(Base64.encode(raw));
+	        System.out.println("STRKey : " +strKey);
+	        decryptPrivateKey = aes.decrypt(strKey,strIv, encryptedKey.trim());
+
+		return decryptPrivateKey;
 	}
 	
 	

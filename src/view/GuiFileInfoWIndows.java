@@ -6,7 +6,10 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
+import com.hazelcast.util.Base64;
+
 import controller.ConfigServer;
+import controller.GenerateKeys;
 import controller.RmiTransferClient;
 import controller.StaticRI;
 import rmitransfer.Server;
@@ -21,6 +24,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.security.PublicKey;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -30,12 +34,14 @@ public class GuiFileInfoWIndows {
 	ConfigServer cs = new ConfigServer();
 	String host = cs.host;
 	String regName = cs.regName;
+	String ftpHost = cs.urlHostFTP;
 
 	public JFrame frame;
 	public JLabel lblDownloadFileName;
 	public String username;
 	public String fileName;
 	public String filePath;
+	
 	private static final DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss");
 	JLabel lMethod;
 	
@@ -98,13 +104,24 @@ public class GuiFileInfoWIndows {
 					creg = LocateRegistry.getRegistry(host);
 					StaticRI cstub = (StaticRI)creg.lookup(regName);
 					downloadFilePath = cstub.getFileNamePath(fileName, username);
-					String method = cstub.getMethodCrypto(filePath,username);
+					System.out.println(downloadFilePath);
+					String method = cstub.getMethodCrypto(downloadFilePath,username);
+					System.out.println(method);
+					String digitalSignature = cstub.getDigitalSignature(downloadFilePath, username);
+					System.out.println(digitalSignature);
+					String senderPK = cstub.getSenderPublicKey(downloadFilePath, username);
+					//System.out.println(filePath);
+					GenerateKeys gk = new GenerateKeys();
+					PublicKey senderPubKey = gk.getPublicKeyFromString(senderPK);
+					
+					byte[] digitalSignatureByte = Base64.decode(digitalSignature.getBytes());
+					String publicKeyString = cstub.getPublicKey(username);
 					
 					
 					String[] dkArry = downloadFilePath.split("/");
 					String downloadFileKey = dkArry[0] +"/" +dkArry[1] +"/"+dkArry[2]+"/key";
 
-					String url = "rmi://localhost:1100/server";
+					String url = ftpHost;
 					Server server = (Server)Naming.lookup(url);
 					File sourceFile = new File(downloadFilePath);
 					File sourceKey = new File(downloadFileKey);
@@ -130,6 +147,9 @@ public class GuiFileInfoWIndows {
 						decrypt.lFIleDir.setText(downloadDir+"/"+fileName);
 						decrypt.lFileName.setText(fileName);
 						decrypt.lMethodE.setText(lMethod.getText());
+						decrypt.username = username;
+						decrypt.digitalSignature = digitalSignatureByte;
+						decrypt.senderPK = senderPubKey;
 					}
 					frame.dispose();
 					
