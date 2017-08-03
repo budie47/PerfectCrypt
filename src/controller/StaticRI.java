@@ -6,6 +6,7 @@ import java.util.Vector;
 
 import modal.FileModal;
 import modal.FileUser;
+import modal.Message;
 import modal.User;
 
 public interface StaticRI extends Remote {
@@ -28,5 +29,21 @@ public interface StaticRI extends Remote {
 	public String getUserEncryptedPrivateKey(String userId)throws RemoteException;
 	public String getDigitalSignature(String filePath,String username) throws RemoteException;
 	public String getSenderPublicKey(String filePath,String username) throws RemoteException;
+	
+	public int getUserId(String username)throws RemoteException;
+	
+	public boolean sendMessage(Message message)throws RemoteException;
+	public Vector<Message> getMessage(int sender_id, int receiver_id)throws RemoteException;
+	public Vector<Message> getMessageNewMessage(int sender_id, int receiver_id)throws RemoteException;
 
+	public String getUserStatus(String userId)throws RemoteException;
+	public boolean logOutUser(String username) throws RemoteException;
+	public void openChatServer(String user1, String user2)throws RemoteException;
+	
+	public void closeChatWindows(int sender_id, int receiver_id) throws RemoteException;
+	public Vector<Message> getMessageThread(int sender_id, int receiver_id)throws RemoteException;
+	
+	public boolean checkNewChat(int sender_id, int receiver_id)throws RemoteException;
+	public void updateNewChat(Message message)throws RemoteException;
+	public void changeShowStatus(int message_id, int status) throws RemoteException;
 }

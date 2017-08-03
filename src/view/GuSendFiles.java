@@ -105,7 +105,7 @@ public class GuSendFiles {
 	String pathKey;
 	String saltPath;
 	String method;
-	String receiveName;
+	String receiveName = "-";
 	String receiverPath;
 	private static final DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss");
 	GenerateKeys gk = new GenerateKeys();
@@ -122,6 +122,8 @@ public class GuSendFiles {
 	private User user;
 	String decryptPrivateKey;
 	String encryptedPrivateKey = null;
+	
+	
 	
 	/**
 	 * Launch the application.
@@ -154,12 +156,15 @@ public class GuSendFiles {
 			listFriend = cstub.getCurrentFriend(name);
 			DefaultListModel friendListModel = new DefaultListModel();
 			for(User friend : listFriend){
-				friendListModel.addElement(friend.getUsername());
+				friendListModel.addElement(friend.getFname());
 			}
 			listFriends.setModel(friendListModel);
 			listFriends.addMouseListener(new MouseAdapter(){
 				public void mouseClicked(MouseEvent e){
 					lFriend_Name.setText(listFriends.getSelectedValue().toString());
+					int index = listFriends.getSelectedIndex();
+					receiveName = listFriend.get(index).getUsername();
+					
 			}
 			});
 			
@@ -300,13 +305,14 @@ public class GuSendFiles {
 					resultUser = cstub.searchFriend(tSearchUser.getText());
 					DefaultListModel listModel = new DefaultListModel();
 					for(User theUser :resultUser ){
-						listModel.addElement(theUser.getUsername());
+						listModel.addElement(theUser.getFname());
 					}
 					list.setModel(listModel);
 					list.addMouseListener(new MouseAdapter() {
 						public void mouseClicked(MouseEvent e){
 							user = resultUser.get(list.getSelectedIndex());
-							lFriend_Name.setText(user.getUsername());
+							lFriend_Name.setText(user.getFname());
+							receiveName = user.getUsername();
 
 						}
 					});
@@ -421,7 +427,7 @@ public class GuSendFiles {
 				file.getParentFile().mkdirs();
 				pathFile = tFileName.getText();
 				fileName = lFile_name.getText();
-				receiveName = lFriend_Name.getText();
+				//receiveName = lFriend_Name.getText();
 
 				Object item = comboBox.getSelectedItem();
 				method = ((ComboItem)item).getValue();
@@ -532,16 +538,16 @@ public class GuSendFiles {
 					String b64DigitalSignature = new String(Base64.encode(digitalSign));
 					String digitalSignture = digitalSign.toString();
 					String senderPath = "file/"+lMain_Username.getText()+"/"+dateS+"/"+ fileName;
-					System.out.print(senderPath);
-					receiverPath = "file/"+lFriend_Name.getText()+"/"+dateS+"/"+ fileName;
-					String receiverKey = "file/"+lFriend_Name.getText()+"/"+dateS+"/key";
-					String checkPath = "file/"+lFriend_Name.getText()+"/"+dateS;
+					
+					receiverPath = "file/"+receiveName+"/"+dateS+"/"+ fileName;
+					String receiverKey = "file/"+receiveName+"/"+dateS+"/key";
+					String checkPath = "file/"+receiveName+"/"+dateS;
 					Registry creg = LocateRegistry.getRegistry(host);
 					StaticRI cstub = (StaticRI)creg.lookup(regName);
 					File check = new File(receiverPath);
 					cstub.checkPath(checkPath);
 					fm.setPath(receiverPath);
-					System.out.println(fm);
+					
 					cstub.saveData(method,receiveName,receiverPath,b64DigitalSignature,lMain_Username.getText());
 					
 		        	String url = ftpHost;
@@ -550,6 +556,7 @@ public class GuSendFiles {
 					RmiTransferClient.upload(server, new File(pathKey), new File(receiverKey));
 					//RmiTransferClient.upload(server, new File(saltPath), new File(checkPath+"/salt"));
 					JOptionPane.showMessageDialog(null,"File has been Send.", "Sending", JOptionPane.WARNING_MESSAGE);
+					frame.dispose();
 					
 					
 				}catch(Exception eee){

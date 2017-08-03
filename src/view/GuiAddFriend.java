@@ -116,7 +116,7 @@ public class GuiAddFriend {
 					resultUser = cstub.searchFriend(tNameField.getText());
 					DefaultListModel listModel = new DefaultListModel();
 					for(User theUser :resultUser ){
-						listModel.addElement(theUser.getUsername());
+						listModel.addElement(theUser.getFname());
 					}
 					list.setModel(listModel);
 					list.addMouseListener(new MouseAdapter() {

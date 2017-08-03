@@ -18,6 +18,8 @@ import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -41,6 +43,7 @@ import javax.swing.Box;
 import javax.swing.DefaultListModel;
 import javax.swing.UIManager;
 
+import controller.ChatUI;
 import controller.ConfigServer;
 import controller.StaticRI;
 import modal.FileModal;
@@ -76,6 +79,7 @@ public class GuiDashboard {
 	ConfigServer cs = new ConfigServer();
 	String host = cs.host;
 	String regName = cs.regName;
+	String chatHost = cs.chatHost;
 	JList listFriends;
 
 	/**
@@ -111,10 +115,55 @@ public class GuiDashboard {
 			listFriend = cstub.getCurrentFriend(name);
 			DefaultListModel friendListModel = new DefaultListModel();
 			for(User friend : listFriend){
-				friendListModel.addElement(friend.getUsername());
+				friendListModel.addElement(friend.getFname());
 				
 			}
 			listFriends.setModel(friendListModel);
+			listFriends.addMouseListener(new MouseAdapter() {
+				public void mouseClicked(MouseEvent e){
+					int index = listFriends.getSelectedIndex();
+					String friendUsername = listFriend.get(index).getUsername();
+					User friend  = listFriend.get(index);
+					try {
+						String friendStatus = cstub.getUserStatus(friend.getUsername());
+						
+						GUIChatWindow guiChat = new GUIChatWindow();
+						guiChat.frame.setVisible(true);
+						guiChat.lblShai.setText(friend.getFname());
+						guiChat.friend = friend;
+						guiChat.lblOnline.setText(friendStatus);
+						
+						int receiver_id = cstub.getUserId(friend.getUsername());
+						int sender_id = cstub.getUserId(lMain_Username.getText());
+						
+						guiChat.receiver_id = receiver_id;
+						guiChat.sender_id = sender_id;
+						guiChat.loadMessage(sender_id, receiver_id);
+						guiChat.runStatusTread();
+						guiChat.chatThread();
+						guiChat.frame.addWindowListener(new WindowAdapter(){
+							public void windowClosing(WindowEvent e){
+								try {
+									guiChat.stopStatusTread();
+									cstub.closeChatWindows(sender_id, receiver_id);
+									System.out.println("windows close");
+									
+								} catch (RemoteException e1) {
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
+								}
+								
+							}
+						});
+						
+						
+					} catch (RemoteException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					
+				}
+			});
 			
 		}catch (Exception err){
 			err.printStackTrace();
@@ -123,6 +172,7 @@ public class GuiDashboard {
 	
 	public void getFileList(String name){
 		try{
+			test();
 			name = lMain_Username.getText();
 			Registry creg = LocateRegistry.getRegistry(host);
 			StaticRI cstub = (StaticRI)creg.lookup(regName);
@@ -151,8 +201,7 @@ public class GuiDashboard {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
-					
-					
+	
 				}
 			});
 			
@@ -167,7 +216,7 @@ public class GuiDashboard {
 	private void initialize() {
 		
 		frame = new JFrame();
-		frame.setBounds(100, 100, 692, 488);
+		frame.setBounds(100, 100, 692, 494);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(new CardLayout(0, 0));
 		
@@ -193,11 +242,11 @@ public class GuiDashboard {
 				
 			}
 		});
-		btnSend.setBounds(387, 366, 84, 61);
+		btnSend.setBounds(387, 366, 84, 35);
 		menu.add(btnSend);
 		Dimension size = btnSend.getSize();
 
-		JButton btnReceive = new JButton("Directoy");
+		JButton btnReceive = new JButton("Directory");
 		btnReceive.setForeground(Color.BLACK);
 		btnReceive.setBackground(Color.LIGHT_GRAY);
 		btnReceive.addActionListener(new ActionListener() {
@@ -212,7 +261,7 @@ public class GuiDashboard {
 				}
 			}
 		});
-		btnReceive.setBounds(481, 366, 86, 61);
+		btnReceive.setBounds(481, 366, 86, 35);
 		Dimension size1 = btnReceive.getSize();
 		
 		menu.add(btnReceive);
@@ -237,8 +286,22 @@ public class GuiDashboard {
 		btnLogOut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				GuiLogin login = new GuiLogin();
-				login.frame.setVisible(true);
-				frame.dispose();
+				Registry creg;
+				try {
+					creg = LocateRegistry.getRegistry(host);
+					StaticRI cstub = (StaticRI)creg.lookup(regName);
+					boolean state = cstub.logOutUser(lMain_Username.getText());
+					if(state){
+						JOptionPane.showMessageDialog(null, "Success Log Out");
+						login.frame.setVisible(true);
+						frame.dispose();
+					}
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+
 				
 			}
 		});
@@ -293,7 +356,7 @@ public class GuiDashboard {
 					listFriend = cstub.getCurrentFriend(lMain_Username.getText());
 					DefaultListModel friendListModel = new DefaultListModel();
 					for(User friend : listFriend){
-						friendListModel.addElement(friend.getUsername());
+						friendListModel.addElement(friend.getFname());
 					}
 					listFriends.setModel(friendListModel);
 					
@@ -318,8 +381,36 @@ public class GuiDashboard {
 		});
 		btnEncrypted.setForeground(Color.BLACK);
 		btnEncrypted.setBackground(Color.LIGHT_GRAY);
-		btnEncrypted.setBounds(577, 366, 89, 61);
+		btnEncrypted.setBounds(577, 366, 89, 35);
 		menu.add(btnEncrypted);
+		
+		JButton btnChat = new JButton("Chat");
+		btnChat.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				ChatUI cUI=new ChatUI();
+				cUI.main(null);
+//				cUI.doConnect();
+//				cUI.showGUIChat();
+				
+//				GUIChat chat = new GUIChat();
+//				User chatUser = new User();
+//				chatUser.setUsername(username);
+//				
+//				chat.showGUIChat(chatUser);
+//				chat.doConnectChatServer(username, chatHost);
+			}
+		});
+		btnChat.setForeground(Color.BLACK);
+		btnChat.setBackground(Color.LIGHT_GRAY);
+		btnChat.setBounds(536, 412, 86, 35);
+		menu.add(btnChat);
+		
+		JButton btnMail = new JButton("Mail");
+		btnMail.setForeground(Color.BLACK);
+		btnMail.setBackground(Color.LIGHT_GRAY);
+		btnMail.setBounds(431, 412, 86, 35);
+		menu.add(btnMail);
 		
 		btnAddFriend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -755,5 +846,23 @@ public class GuiDashboard {
 		btnNewButton_2.setBounds(341, 368, 321, 70);
 		decrypt.add(btnNewButton_2);
 		
+	}
+	
+	public void test(){
+		  Registry registry;
+		try {
+			registry = LocateRegistry.getRegistry(host, 1099);
+			final String[] boundNames = registry.list();
+	         System.out.println(
+	            "Names bound to RMI registry at host " + host + " and port " + 1099 + ":");
+	         for (final String name : boundNames)
+	         {
+	            System.out.println("\t" + name);
+	         }
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	         
 	}
 }
