@@ -8,9 +8,7 @@ import java.awt.Window;
 import javax.swing.JFrame;
 import java.awt.CardLayout;
 import javax.swing.JPanel;
-
-
-
+import javax.swing.JPasswordField;
 import javax.swing.JButton;
 import java.awt.Color;
 import java.awt.Desktop;
@@ -39,13 +37,16 @@ import javax.swing.JInternalFrame;
 import javax.swing.JSpinner;
 import javax.swing.JTextPane;
 import javax.swing.JTextField;
+import javax.crypto.BadPaddingException;
 import javax.swing.Box;
 import javax.swing.DefaultListModel;
 import javax.swing.UIManager;
 
+import controller.AES256Encryption;
 import controller.ChatUI;
 import controller.ConfigServer;
 import controller.StaticRI;
+import controller.UserController;
 import modal.FileModal;
 import modal.FileUser;
 import modal.User;
@@ -81,7 +82,8 @@ public class GuiDashboard {
 	String regName = cs.regName;
 	String chatHost = cs.chatHost;
 	JList listFriends;
-
+	String decryptPrivateKey;
+	String encryptedPrivateKey = null;
 	/**
 	 * Launch the application.
 	 */
@@ -121,46 +123,124 @@ public class GuiDashboard {
 			listFriends.setModel(friendListModel);
 			listFriends.addMouseListener(new MouseAdapter() {
 				public void mouseClicked(MouseEvent e){
-					int index = listFriends.getSelectedIndex();
-					String friendUsername = listFriend.get(index).getUsername();
-					User friend  = listFriend.get(index);
-					try {
-						String friendStatus = cstub.getUserStatus(friend.getUsername());
-						
-						GUIChatWindow guiChat = new GUIChatWindow();
-						guiChat.frame.setVisible(true);
-						guiChat.lblShai.setText(friend.getFname());
-						guiChat.friend = friend;
-						guiChat.lblOnline.setText(friendStatus);
-						
-						int receiver_id = cstub.getUserId(friend.getUsername());
-						int sender_id = cstub.getUserId(lMain_Username.getText());
-						
-						guiChat.receiver_id = receiver_id;
-						guiChat.sender_id = sender_id;
-						guiChat.loadMessage(sender_id, receiver_id);
-						guiChat.runStatusTread();
-						guiChat.chatThread();
-						guiChat.frame.addWindowListener(new WindowAdapter(){
-							public void windowClosing(WindowEvent e){
-								try {
-									guiChat.stopStatusTread();
-									cstub.closeChatWindows(sender_id, receiver_id);
-									System.out.println("windows close");
-									
-								} catch (RemoteException e1) {
-									// TODO Auto-generated catch block
-									e1.printStackTrace();
-								}
-								
+					JPasswordField pf = new JPasswordField();
+					int okCxl = JOptionPane.showConfirmDialog(null, pf, "Enter Password", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+					if (okCxl == JOptionPane.OK_OPTION) {
+						try{
+							AES256Encryption aes = new AES256Encryption();
+							UserController uc = new UserController();
+							String stringPass = "null";
+							
+							char[] pass = pf.getPassword();
+							
+							for (int i = 0;i < pass.length; i++){			
+				
+								stringPass += Character.toString(pass[i]);
 							}
-						});
+							
+							 Registry creg = LocateRegistry.getRegistry(host,1099);
+					         StaticRI cstub = (StaticRI)creg.lookup(regName);
+					         encryptedPrivateKey = cstub.getUserEncryptedPrivateKey(username);
+					         try{
+					        	 decryptPrivateKey = uc.decryptPrivateKey(encryptedPrivateKey,stringPass);
+					        	 int index = listFriends.getSelectedIndex();
+									String friendUsername = listFriend.get(index).getUsername();
+									User friend  = listFriend.get(index);  
+									
+									String friendStatus = cstub.getUserStatus(friend.getUsername());
+									
+									GUIChatWindow guiChat = new GUIChatWindow();
+									guiChat.frame.setVisible(true);
+									guiChat.lblShai.setText(friend.getFname());
+									guiChat.friend = friend;
+									guiChat.lblOnline.setText(friendStatus);
+									
+									guiChat.encryptedPrivateKey = encryptedPrivateKey;
+									guiChat.decryptPrivateKey = decryptPrivateKey;
+									
+									int receiver_id = cstub.getUserId(friend.getUsername());
+									int sender_id = cstub.getUserId(lMain_Username.getText());
+									
+									guiChat.receiver_id = receiver_id;
+									guiChat.sender_id = sender_id;
+									guiChat.loadMessage(sender_id, receiver_id);
+									guiChat.runStatusTread();
+									guiChat.chatThread();
+									guiChat.frame.addWindowListener(new WindowAdapter(){
+										public void windowClosing(WindowEvent e){
+											try {
+												guiChat.stopStatusTread();
+												cstub.closeChatWindows(sender_id, receiver_id);
+												System.out.println("windows close");
+												
+											} catch (RemoteException e1) {
+												// TODO Auto-generated catch block
+												e1.printStackTrace();
+											}
+											
+										}
+									});
+					         }catch(BadPaddingException errPass){
+					        	 JOptionPane.showMessageDialog(null, "Your Password were wrong");
+					         }
+					         
+					         
+								
+					            
+					            
+						}catch(Exception e23){
+							e23.printStackTrace();
+
+						} 
 						
-						
-					} catch (RemoteException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
+
 					}
+//					int index = listFriends.getSelectedIndex();
+//					String friendUsername = listFriend.get(index).getUsername();
+//					User friend  = listFriend.get(index);  
+					
+
+//					try {
+//						String friendStatus = cstub.getUserStatus(friend.getUsername());
+//						
+//						GUIChatWindow guiChat = new GUIChatWindow();
+//						guiChat.frame.setVisible(true);
+//						guiChat.lblShai.setText(friend.getFname());
+//						guiChat.friend = friend;
+//						guiChat.lblOnline.setText(friendStatus);
+//						
+//						
+//						
+//						
+//						int receiver_id = cstub.getUserId(friend.getUsername());
+//						int sender_id = cstub.getUserId(lMain_Username.getText());
+//						
+//						guiChat.receiver_id = receiver_id;
+//						guiChat.sender_id = sender_id;
+//						guiChat.loadMessage(sender_id, receiver_id);
+//						guiChat.runStatusTread();
+//						guiChat.chatThread();
+//						guiChat.frame.addWindowListener(new WindowAdapter(){
+//							public void windowClosing(WindowEvent e){
+//								try {
+//									guiChat.stopStatusTread();
+//									cstub.closeChatWindows(sender_id, receiver_id);
+//									System.out.println("windows close");
+//									
+//								} catch (RemoteException e1) {
+//									// TODO Auto-generated catch block
+//									e1.printStackTrace();
+//								}
+//								
+//							}
+//						});
+//						
+//						
+//					} catch (RemoteException e1) {
+//						// TODO Auto-generated catch block
+//						e1.printStackTrace();
+//					}
 					
 				}
 			});

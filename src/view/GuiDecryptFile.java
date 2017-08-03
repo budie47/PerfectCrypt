@@ -56,9 +56,10 @@ public class GuiDecryptFile {
 	ConfigServer cs = new ConfigServer();
 	String host = cs.host;
 	String regName = cs.regName;
-	String encryptedPrivateKey = null;
+	
 	String username = null;
 	String decryptPrivateKey;
+	String encryptedPrivateKey = null;
 	byte[] digitalSignature;
 	PublicKey senderPK;
 	FileConvert fConvert = new FileConvert();

@@ -16,7 +16,10 @@ import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Vector;
@@ -66,6 +69,11 @@ public class GUIChatWindow {
 	GenerateKeys gk = new GenerateKeys();
 	PublicKey publicKeyUser;
 	String publicKeyUserString;
+	
+	String decryptPrivateKey;
+	String encryptedPrivateKey;
+	
+	SecretKey secKey;
 
 	/**
 	 * Launch the application.
@@ -229,6 +237,7 @@ public class GUIChatWindow {
 	}
 	
 	public void loadMessage(int senderID,int receiverID){
+		
 
 		Registry creg;
 		try {
@@ -262,10 +271,14 @@ public class GUIChatWindow {
 			textArea.setText("");
 			Registry creg;
 			try {
+
+
+				
 				creg = LocateRegistry.getRegistry(host);
 				StaticRI cstub = (StaticRI)creg.lookup(regName);
 				Vector<Message> messages = cstub.getMessageThread(senderID, receiverID);
 				for(int i = 1; i<messages.size(); i++){
+				
 					textArea.append(messages.get(i).getDate_time() + " : " + messages.get(i).getSender_name() +" : \n");
 					textArea.append(messages.get(i).getMessage() + " \n ");
 				}
@@ -284,13 +297,18 @@ public class GUIChatWindow {
 			
 			Registry creg;
 			try {
+				PrivateKey privateKey  = getPrivateKey(decryptPrivateKey);
+				BlowfishEncryption bf = new BlowfishEncryption();
+				
 				creg = LocateRegistry.getRegistry(host);
 				StaticRI cstub = (StaticRI)creg.lookup(regName);
 				Vector<Message> messages = cstub.getMessageNewMessage(senderID, receiverID);
 				
 				for(int i = 0; i<messages.size(); i++){
-					textArea.append(messages.get(i).getDate_time() + " : " + messages.get(i).getSender_name() +" : \n");
-					textArea.append(messages.get(i).getMessage() + " \n ");
+					secKey =  gk.decryptAESSecretKey(messages.get(i).getKey().getBytes(), privateKey,"Blowfish");
+					String message = bf.decryptText(messages.get(i).getMessage(), secKey);
+					textArea.append(messages.get(i).getDate_time() + " : [ " + messages.get(i).getSender_name() +" ] : \n");
+					textArea.append(message + " \n ");
 
 				}
 				
@@ -370,6 +388,16 @@ public class GUIChatWindow {
 		timer.purge();
 		chatTimer.purge();
 		chatTimer.cancel();
+	}
+	
+	public PrivateKey getPrivateKey(String decryptedPrivateKey) throws Exception{
+		
+		byte[] epkey = Base64.decode(decryptedPrivateKey.getBytes());
+
+		//byte[] pkey = decryptedPrivateKey.getBytes();
+		KeyFactory kf = KeyFactory.getInstance("RSA");
+		PrivateKey privateKey = kf.generatePrivate(new PKCS8EncodedKeySpec(epkey));
+		return privateKey;
 	}
 	
 
