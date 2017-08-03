@@ -16,7 +16,14 @@ public class Message implements Serializable{
 	String sender_name;
 	String receiver_name;
 	int message_id;
+	String key;
 	
+	public String getKey() {
+		return key;
+	}
+	public void setKey(String key) {
+		this.key = key;
+	}
 	public int getMessage_id() {
 		return message_id;
 	}

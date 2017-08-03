@@ -46,4 +46,6 @@ public interface StaticRI extends Remote {
 	public boolean checkNewChat(int sender_id, int receiver_id)throws RemoteException;
 	public void updateNewChat(Message message)throws RemoteException;
 	public void changeShowStatus(int message_id, int status) throws RemoteException;
+	
+	public String getPublicKeyUserId(int user_id) throws RemoteException;
 }

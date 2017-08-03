@@ -17,6 +17,10 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
+import org.bouncycastle.util.encoders.Base64Encoder;
+
+import com.hazelcast.util.Base64;
+
 /**
  *
  * 
@@ -45,12 +49,23 @@ public class BlowfishEncryption {
         
         SecretKey skey = encryptFile.getBlowfishKey();
         
-        System.out.println("Starting Encryption...");
-        encryptFile.encrypt(fileToEncrypt,encryptedFile,skey);
-        System.out.println("Encryption completed...");
-        System.out.println("Starting Decryption...");
-        encryptFile.decrypt( encryptedFile, decryptedFile,skey);
-        System.out.println("Decryption completed...");
+        String plainText = "Masih Belum Sempurna";
+        String cipherText = encryptFile.encryptText(plainText, skey);
+        String decryptText = encryptFile.decryptText(cipherText, skey);
+        
+        System.out.println("PLAIN TEXT ");
+        System.out.println(plainText);
+        System.out.println("CIPHER TEXT ");
+        System.out.println(cipherText);
+        System.out.println("PLAIN TEXT ");
+        System.out.println(decryptText);
+        
+//        System.out.println("Starting Encryption...");
+//        encryptFile.encrypt(fileToEncrypt,encryptedFile,skey);
+//        System.out.println("Encryption completed...");
+//        System.out.println("Starting Decryption...");
+//        encryptFile.decrypt( encryptedFile, decryptedFile,skey);
+//        System.out.println("Decryption completed...");
     }
 
     /**
@@ -103,6 +118,40 @@ public class BlowfishEncryption {
 			e.printStackTrace();
 		}
     }
+    public String encryptText(String plainText, SecretKey skey) {
+
+        InputStream inStream = null;
+        OutputStream outStream = null;
+       
+        byte[] cipherByte;
+        String cipherText = null;
+        byte[] plainByte = plainText.getBytes();
+        try {
+            /**
+             * Initialize the cipher for encryption
+             */
+        	cipher = Cipher.getInstance("Blowfish");
+            cipher.init(Cipher.ENCRYPT_MODE, skey);
+            cipherByte = cipher.doFinal(plainByte);
+            cipherText = new String(Base64.encode(cipherByte));
+            
+
+        } catch (IllegalBlockSizeException ex) {
+            System.out.println(ex);
+        } catch (BadPaddingException ex) {
+            System.out.println(ex);
+        } catch (InvalidKeyException ex) {
+            System.out.println(ex);
+        } catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+        return cipherText;
+    }
 
     /**
      * 
@@ -153,5 +202,39 @@ public class BlowfishEncryption {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+    }
+    
+    public String decryptText(String cipherText, SecretKey skey) {
+    	String plainText = null;
+        try {
+            /**
+             * Initialize the cipher for decryption
+             */
+        	byte[] plainByte;
+        	byte[] cipherByte;
+        	cipherByte = Base64.decode(cipherText.getBytes());
+        	cipher = Cipher.getInstance("Blowfish");
+            cipher.init(Cipher.DECRYPT_MODE, skey);
+            plainByte = cipher.doFinal(cipherByte);
+            plainText = new String(plainByte);
+            
+            /**
+             * Initialize input and output streams
+             */
+           
+        } catch (IllegalBlockSizeException ex) {
+            System.out.println(ex);
+        } catch (BadPaddingException ex) {
+            System.out.println(ex);
+        } catch (InvalidKeyException ex) {
+            System.out.println(ex);
+        }  catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        return plainText;
     }
 }

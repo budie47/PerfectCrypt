@@ -8,6 +8,7 @@ import javax.swing.JOptionPane;
 
 import java.awt.Font;
 import javax.swing.JTextField;
+import javax.crypto.SecretKey;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import java.awt.TextArea;
@@ -15,7 +16,7 @@ import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-
+import java.security.PublicKey;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Vector;
@@ -25,9 +26,13 @@ import java.util.TimerTask;
 
 import javax.swing.ScrollPaneConstants;
 
+import com.hazelcast.util.Base64;
+
+import controller.BlowfishEncryption;
 import controller.ChatClient;
 import controller.ChatInterface;
 import controller.ConfigServer;
+import controller.GenerateKeys;
 import controller.StaticRI;
 import modal.Message;
 import modal.User;
@@ -58,8 +63,9 @@ public class GUIChatWindow {
 	private JButton btnStop;
 	Timer timer;
 	Timer chatTimer;
-	
-	
+	GenerateKeys gk = new GenerateKeys();
+	PublicKey publicKeyUser;
+	String publicKeyUserString;
 
 	/**
 	 * Launch the application.
@@ -127,16 +133,30 @@ public class GUIChatWindow {
 		JButton btnNewButton = new JButton("Send");
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Message msg = new Message();
-				msg.setMessage(tMessageField.getText());
-				msg.setReceiver_id(receiver_id);
-				msg.setSender_id(sender_id);
-				msg.setDigital_signature("-");
-
-
 				try {
 					Registry creg = LocateRegistry.getRegistry(host);
 					StaticRI cstub = (StaticRI)creg.lookup(regName);
+					
+					publicKeyUserString = cstub.getPublicKeyUserId(receiver_id);
+					publicKeyUser = gk.getPublicKeyFromString(publicKeyUserString);
+					
+				Message msg = new Message();
+				BlowfishEncryption bf = new BlowfishEncryption();
+		        SecretKey skey = bf.getBlowfishKey();
+		        byte[] encryptSecKey = gk.encryptAESSecretKey(publicKeyUser, skey);
+		        String e_secretKey = new String(Base64.encode(encryptSecKey));
+		        
+		        String plainText = tMessageField.getText();
+		        String cipherText = bf.encryptText(plainText, skey);
+		        
+				msg.setMessage(cipherText);
+				msg.setReceiver_id(receiver_id);
+				msg.setSender_id(sender_id);
+				msg.setKey(e_secretKey);
+				msg.setDigital_signature("-");
+
+
+
 					boolean statsMessage = cstub.sendMessage(msg);
 					if(statsMessage){
 						//reloadChat(sender_id, receiver_id);
