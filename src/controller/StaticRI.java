@@ -2,6 +2,7 @@ package controller;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import modal.FileModal;
@@ -48,4 +49,5 @@ public interface StaticRI extends Remote {
 	public void changeShowStatus(int message_id, int status) throws RemoteException;
 	
 	public String getPublicKeyUserId(int user_id) throws RemoteException;
+	public ArrayList<String> getDHKey(int user_id)throws RemoteException;
 }

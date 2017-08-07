@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.ArrayList;
 import java.util.Vector;
 import java.awt.event.ActionEvent;
 import javax.swing.JLabel;
@@ -143,7 +144,7 @@ public class GuiDashboard {
 					         StaticRI cstub = (StaticRI)creg.lookup(regName);
 					         encryptedPrivateKey = cstub.getUserEncryptedPrivateKey(username);
 					         try{
-					        	 decryptPrivateKey = uc.decryptPrivateKey(encryptedPrivateKey,stringPass);
+					        	 
 					        	 int index = listFriends.getSelectedIndex();
 									String friendUsername = listFriend.get(index).getUsername();
 									User friend  = listFriend.get(index);  
@@ -156,17 +157,28 @@ public class GuiDashboard {
 									guiChat.friend = friend;
 									guiChat.lblOnline.setText(friendStatus);
 									
-									guiChat.encryptedPrivateKey = encryptedPrivateKey;
-									guiChat.decryptPrivateKey = decryptPrivateKey;
+									//guiChat.encryptedPrivateKey = encryptedPrivateKey;
+									//guiChat.decryptPrivateKey = decryptPrivateKey;
 									
 									int receiver_id = cstub.getUserId(friend.getUsername());
 									int sender_id = cstub.getUserId(lMain_Username.getText());
+									ArrayList<String> dhkey = cstub.getDHKey(sender_id);
+									ArrayList<String> dhkeyReceiver = cstub.getDHKey(receiver_id);
 									
+									String receiverPublicKey = dhkeyReceiver.get(0);
+									
+									decryptPrivateKey = uc.decryptPrivateKey(dhkey.get(1),stringPass);
+									System.out.println("DH Public Key : "+dhkey.get(0));
+									System.out.println("DH encryted Key : "+dhkey.get(1));
+									System.out.println("DH Secret Key : "+decryptPrivateKey);
 									guiChat.receiver_id = receiver_id;
 									guiChat.sender_id = sender_id;
 									guiChat.loadMessage(sender_id, receiver_id);
 									guiChat.runStatusTread();
 									guiChat.chatThread();
+									guiChat.receiverPublicKey = receiverPublicKey;
+									guiChat.senderPublicKey = dhkey.get(0);
+									guiChat.senderSecretKey = decryptPrivateKey;
 									guiChat.frame.addWindowListener(new WindowAdapter(){
 										public void windowClosing(WindowEvent e){
 											try {

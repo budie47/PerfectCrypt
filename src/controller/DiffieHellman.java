@@ -209,16 +209,17 @@ public class DiffieHellman {
 	
 	public static void main(String [] args) throws Exception
 	{
-		DiffieHellman dh = new DiffieHellman();
+		DiffieHellman dh = new DiffieHellman();//sender
 		System.out.println("Secret Key : " + dh.getSecretKey());
 		System.out.println("Public Key : " + dh.getPublicKey());
 		
-		DiffieHellman dh1 = new DiffieHellman();
+		DiffieHellman dh1 = new DiffieHellman();//receiver
 		System.out.println("Secret Key : " + dh1.getSecretKey());
 		System.out.println("Public Key : " + dh1.getPublicKey());
 		
 		System.out.println("Shared Key : " + dh.getDHSharedKey(dh1.getPublicKey(), dh.getSecretKey()));
 		System.out.println("Shared Key : " + dh1.getDHSharedKey(dh.getPublicKey(), dh1.getSecretKey()));
+		System.out.println("Shared Key : " + dh1.getDHSharedKey(dh1.getPublicKey(), dh1.getSecretKey()));
 		
 		String plainText = "THE INTERNATIONAL";
 		String cipherText;

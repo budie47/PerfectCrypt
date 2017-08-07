@@ -35,6 +35,7 @@ import controller.BlowfishEncryption;
 import controller.ChatClient;
 import controller.ChatInterface;
 import controller.ConfigServer;
+import controller.DiffieHellman;
 import controller.GenerateKeys;
 import controller.StaticRI;
 import modal.Message;
@@ -43,6 +44,7 @@ import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.math.BigInteger;
 import java.awt.event.ActionEvent;
 
 public class GUIChatWindow {
@@ -71,6 +73,10 @@ public class GUIChatWindow {
 	
 	String decryptPrivateKey;
 	String encryptedPrivateKey;
+	
+	String receiverPublicKey;
+	String senderPublicKey;
+	String senderSecretKey;
 	
 	SecretKey secKey;
 
@@ -136,51 +142,19 @@ public class GUIChatWindow {
 		tMessageField.setBounds(10, 221, 324, 29);
 		frame.getContentPane().add(tMessageField);
 		tMessageField.setColumns(10);
+		tMessageField.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+
+				sendMessage();
+				
+			}
+		});
 		
 		JButton btnNewButton = new JButton("Send");
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					Registry creg = LocateRegistry.getRegistry(host);
-					StaticRI cstub = (StaticRI)creg.lookup(regName);
-					
-					publicKeyUserString = cstub.getPublicKeyUserId(receiver_id);
-					publicKeyUser = gk.getPublicKeyFromString(publicKeyUserString);
-					
-				Message msg = new Message();
-				BlowfishEncryption bf = new BlowfishEncryption();
-		        SecretKey skey = bf.getBlowfishKey();
-		        byte[] encryptSecKey = gk.encryptAESSecretKey(publicKeyUser, skey);
-		        String e_secretKey = new String(Base64.encode(encryptSecKey));
-		        
-		        String plainText = tMessageField.getText();
-		        String cipherText = bf.encryptText(plainText, skey);
-		        
-				msg.setMessage(plainText);
-				msg.setReceiver_id(receiver_id);
-				msg.setSender_id(sender_id);
-				msg.setKey(e_secretKey);
-				msg.setDigital_signature("-");
 
-
-
-					boolean statsMessage = cstub.sendMessage(msg);
-					if(statsMessage){
-						//reloadChat(sender_id, receiver_id);
-//						textArea.append(getCurrentDateTime() + " : " + sender_id +" : \n");
-//						textArea.append(tMessageField.getText() + " \n ");
-						tMessageField.setText("");
-						
-						
-					} else{
-						//JOptionPane.showMessageDialog(null, "|-FAIL-|");
-					}
-					
-				} catch (Exception e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-				
+				sendMessage();
 				
 			}
 		});
@@ -237,16 +211,20 @@ public class GUIChatWindow {
 			textArea.setText("");
 			Registry creg;
 			try {
-
+				DiffieHellman dh = new DiffieHellman();
 
 				
 				creg = LocateRegistry.getRegistry(host);
 				StaticRI cstub = (StaticRI)creg.lookup(regName);
 				Vector<Message> messages = cstub.getMessageThread(senderID, receiverID);
 				for(int i = 1; i<messages.size(); i++){
+					
+			        BigInteger receiverPK = new BigInteger(receiverPublicKey);
+			        BigInteger senderSK = new BigInteger(senderSecretKey);
+					String decryptText = dh.decryptDH(messages.get(i).getMessage(), dh.getDHSharedKey(receiverPK,senderSK));
 				
 					textArea.append(messages.get(i).getDate_time() + " : " + messages.get(i).getSender_name() +" : \n");
-					textArea.append(messages.get(i).getMessage() + " \n ");
+					textArea.append(decryptText + " \n ");
 				}
 				
 				
@@ -259,12 +237,14 @@ public class GUIChatWindow {
 		//}
 	}
 	public void retrieveNewChat(int senderID,int receiverID){
+		
 		//while(status){
 			
 			Registry creg;
 			try {
 				//PrivateKey privateKey  = getPrivateKey(decryptPrivateKey);
 				//BlowfishEncryption bf = new BlowfishEncryption();
+				DiffieHellman dh = new DiffieHellman();
 				
 				creg = LocateRegistry.getRegistry(host);
 				StaticRI cstub = (StaticRI)creg.lookup(regName);
@@ -275,8 +255,11 @@ public class GUIChatWindow {
 //					String message = bf.decryptText(messages.get(i).getMessage(), secKey);
 					//secKey =  gk.decryptAESSecretKey("a4VLr/SriC/7ijxzKsWjxzTuALvT4bZuFErymt4RJpVbymVLQ+marjgbK8ZNML6tc0OAepLD4ulRmZwjhSdGPwvE0QTDKF/28R8ESr1BxpVf16V8TMALCaAVR9JEhlkd4WSfnDYU7s0463bvdWoxHdQYgIeBAEREH3H/5EeNCoJsz6Knns+pXej4tWs0d3zDbeqQUSCWpm9RQ0hXmZCKVyk7eH7+3Urq3Dk7Vp00/cTE+3wkWypoIizoiZNsHiT6VFW8lDiNJh58oVjbgR+KYaBTu01Nz7TN+W2hfsgilPOMXnbUBDE8s7gqPpQJ/7Kftf0Ro03D4RwFZ82rjEO0Sw==".getBytes(), privateKey,"Blowfish");
 					//String message = bf.decryptText("LPpjsbpTjws=", secKey);
+			        BigInteger receiverPK = new BigInteger(receiverPublicKey);
+			        BigInteger senderSK = new BigInteger(senderSecretKey);
+					String decryptText = dh.decryptDH(messages.get(i).getMessage(), dh.getDHSharedKey(receiverPK,senderSK));
 					textArea.append(messages.get(i).getDate_time() + " : [ " + messages.get(i).getSender_name() +" ] : \n");
-					textArea.append(messages.get(i).getMessage() + " \n ");
+					textArea.append(decryptText + " \n ");
 
 				}
 				
@@ -366,6 +349,56 @@ public class GUIChatWindow {
 		timer.purge();
 		chatTimer.cancel();
 		chatTimer.purge();
+	}
+	
+	public void sendMessage(){
+		try {
+			Registry creg = LocateRegistry.getRegistry(host);
+			StaticRI cstub = (StaticRI)creg.lookup(regName);
+			
+			publicKeyUserString = cstub.getPublicKeyUserId(receiver_id);
+			publicKeyUser = gk.getPublicKeyFromString(publicKeyUserString);
+			
+			DiffieHellman dh = new DiffieHellman();
+			
+		Message msg = new Message();
+		BlowfishEncryption bf = new BlowfishEncryption();
+        SecretKey skey = bf.getBlowfishKey();
+        byte[] encryptSecKey = gk.encryptAESSecretKey(publicKeyUser, skey);
+        String e_secretKey = new String(Base64.encode(encryptSecKey));
+        
+        String plainText = tMessageField.getText();
+        String cipherText = bf.encryptText(plainText, skey);
+        
+        BigInteger receiverPK = new BigInteger(receiverPublicKey);
+        BigInteger senderSK = new BigInteger(senderSecretKey);
+        
+        cipherText = dh.encryptDH(plainText, dh.getDHSharedKey(receiverPK,senderSK));
+        
+		msg.setMessage(cipherText);
+		msg.setReceiver_id(receiver_id);
+		msg.setSender_id(sender_id);
+		msg.setKey(e_secretKey);
+		msg.setDigital_signature("-");
+
+
+
+			boolean statsMessage = cstub.sendMessage(msg);
+			if(statsMessage){
+				//reloadChat(sender_id, receiver_id);
+//				textArea.append(getCurrentDateTime() + " : " + sender_id +" : \n");
+//				textArea.append(tMessageField.getText() + " \n ");
+				tMessageField.setText("");
+				
+				
+			} else{
+				//JOptionPane.showMessageDialog(null, "|-FAIL-|");
+			}
+			
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 	}
 	
 
