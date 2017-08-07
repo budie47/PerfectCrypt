@@ -178,17 +178,22 @@ public class GUIChatWindow {
 		
 	}
 	
-	public void loadMessage(int senderID,int receiverID){
+	public void loadMessage(int senderID,int receiverID, String receiverPublicKey, String senderSecretKey){
 		
 
 		Registry creg;
 		try {
+			DiffieHellman dh = new DiffieHellman();
 			creg = LocateRegistry.getRegistry(host);
 			StaticRI cstub = (StaticRI)creg.lookup(regName);
 			Vector<Message> messages = cstub.getMessage(senderID, receiverID);
 			for(int i = 1; i<messages.size(); i++){
+				BigInteger receiverPK = new BigInteger(receiverPublicKey);
+		        BigInteger senderSK = new BigInteger(senderSecretKey);
+				String decryptText = dh.decryptDH(messages.get(i).getMessage(), dh.getDHSharedKey(receiverPK,senderSK));
+				
 				textArea.append(messages.get(i).getDate_time() + " : " + messages.get(i).getSender_name() +" : \n");
-				textArea.append(messages.get(i).getMessage() + " \n ");
+				textArea.append(decryptText+ " \n ");
 			}
 
 		} catch (Exception e) {

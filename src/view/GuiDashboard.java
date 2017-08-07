@@ -168,17 +168,19 @@ public class GuiDashboard {
 									String receiverPublicKey = dhkeyReceiver.get(0);
 									
 									decryptPrivateKey = uc.decryptPrivateKey(dhkey.get(1),stringPass);
-									System.out.println("DH Public Key : "+dhkey.get(0));
-									System.out.println("DH encryted Key : "+dhkey.get(1));
-									System.out.println("DH Secret Key : "+decryptPrivateKey);
+//									System.out.println("DH Public Key : "+dhkey.get(0));
+//									System.out.println("DH encryted Key : "+dhkey.get(1));
+//									System.out.println("DH Secret Key : "+decryptPrivateKey);
 									guiChat.receiver_id = receiver_id;
 									guiChat.sender_id = sender_id;
-									guiChat.loadMessage(sender_id, receiver_id);
-									guiChat.runStatusTread();
-									guiChat.chatThread();
+
 									guiChat.receiverPublicKey = receiverPublicKey;
 									guiChat.senderPublicKey = dhkey.get(0);
 									guiChat.senderSecretKey = decryptPrivateKey;
+									
+									guiChat.loadMessage(sender_id, receiver_id,receiverPublicKey,decryptPrivateKey);
+									guiChat.runStatusTread();
+									guiChat.chatThread();
 									guiChat.frame.addWindowListener(new WindowAdapter(){
 										public void windowClosing(WindowEvent e){
 											try {
