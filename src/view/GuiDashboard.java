@@ -322,7 +322,7 @@ public class GuiDashboard {
 				
 			}
 		});
-		btnSend.setBounds(387, 366, 84, 35);
+		btnSend.setBounds(387, 366, 130, 35);
 		menu.add(btnSend);
 		Dimension size = btnSend.getSize();
 
@@ -341,7 +341,7 @@ public class GuiDashboard {
 				}
 			}
 		});
-		btnReceive.setBounds(481, 366, 86, 35);
+		btnReceive.setBounds(536, 366, 130, 35);
 		Dimension size1 = btnReceive.getSize();
 		
 		menu.add(btnReceive);
@@ -461,35 +461,13 @@ public class GuiDashboard {
 		});
 		btnEncrypted.setForeground(Color.BLACK);
 		btnEncrypted.setBackground(Color.LIGHT_GRAY);
-		btnEncrypted.setBounds(577, 366, 89, 35);
+		btnEncrypted.setBounds(536, 412, 130, 35);
 		menu.add(btnEncrypted);
-		
-		JButton btnChat = new JButton("Chat");
-		btnChat.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
-				ChatUI cUI=new ChatUI();
-				cUI.main(null);
-//				cUI.doConnect();
-//				cUI.showGUIChat();
-				
-//				GUIChat chat = new GUIChat();
-//				User chatUser = new User();
-//				chatUser.setUsername(username);
-//				
-//				chat.showGUIChat(chatUser);
-//				chat.doConnectChatServer(username, chatHost);
-			}
-		});
-		btnChat.setForeground(Color.BLACK);
-		btnChat.setBackground(Color.LIGHT_GRAY);
-		btnChat.setBounds(536, 412, 86, 35);
-		menu.add(btnChat);
 		
 		JButton btnMail = new JButton("Mail");
 		btnMail.setForeground(Color.BLACK);
 		btnMail.setBackground(Color.LIGHT_GRAY);
-		btnMail.setBounds(431, 412, 86, 35);
+		btnMail.setBounds(387, 412, 130, 35);
 		menu.add(btnMail);
 		
 		btnAddFriend.addActionListener(new ActionListener() {

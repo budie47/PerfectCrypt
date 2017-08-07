@@ -63,7 +63,6 @@ public class GUIChatWindow {
 	public int receiver_id;
 	
 	private TextArea textArea;
-	private JButton btnStop;
 	Timer timer;
 	Timer chatTimer;
 	GenerateKeys gk = new GenerateKeys();
@@ -117,7 +116,7 @@ public class GUIChatWindow {
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 538, 300);
+		frame.setBounds(100, 100, 462, 300);
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 
@@ -157,7 +156,7 @@ public class GUIChatWindow {
 		        String plainText = tMessageField.getText();
 		        String cipherText = bf.encryptText(plainText, skey);
 		        
-				msg.setMessage(cipherText);
+				msg.setMessage(plainText);
 				msg.setReceiver_id(receiver_id);
 				msg.setSender_id(sender_id);
 				msg.setKey(e_secretKey);
@@ -203,37 +202,6 @@ public class GUIChatWindow {
 		textArea.setBackground(Color.WHITE);
 		scrollPane.setViewportView(textArea);
 		
-		JButton btnNewButton_1 = new JButton("New button");
-		btnNewButton_1.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-
-//				int initialDelay = 1000;
-//				int period = 1000;
-//				{
-//					timer = new Timer();
-//					TimerTask task = new TimerTask(){
-//						public void run(){
-//							reloadChat(sender_id, receiver_id);
-//						}
-//					};
-//					timer.scheduleAtFixedRate(task, initialDelay, period);
-//				}
-
-			
-			}
-		});
-		btnNewButton_1.setBounds(434, 66, 89, 23);
-		frame.getContentPane().add(btnNewButton_1);
-		
-		btnStop = new JButton("Stop");
-		btnStop.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				stopStatusTread();
-			}
-		});
-		btnStop.setBounds(434, 115, 89, 23);
-		frame.getContentPane().add(btnStop);
-		
 	}
 	
 	public void loadMessage(int senderID,int receiverID){
@@ -248,9 +216,7 @@ public class GUIChatWindow {
 				textArea.append(messages.get(i).getDate_time() + " : " + messages.get(i).getSender_name() +" : \n");
 				textArea.append(messages.get(i).getMessage() + " \n ");
 			}
-			
-			
-			
+
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -297,18 +263,20 @@ public class GUIChatWindow {
 			
 			Registry creg;
 			try {
-				PrivateKey privateKey  = getPrivateKey(decryptPrivateKey);
-				BlowfishEncryption bf = new BlowfishEncryption();
+				//PrivateKey privateKey  = getPrivateKey(decryptPrivateKey);
+				//BlowfishEncryption bf = new BlowfishEncryption();
 				
 				creg = LocateRegistry.getRegistry(host);
 				StaticRI cstub = (StaticRI)creg.lookup(regName);
 				Vector<Message> messages = cstub.getMessageNewMessage(senderID, receiverID);
 				
 				for(int i = 0; i<messages.size(); i++){
-					secKey =  gk.decryptAESSecretKey(messages.get(i).getKey().getBytes(), privateKey,"Blowfish");
-					String message = bf.decryptText(messages.get(i).getMessage(), secKey);
+//					secKey =  gk.decryptAESSecretKey(messages.get(i).getKey().getBytes(), privateKey,"Blowfish");
+//					String message = bf.decryptText(messages.get(i).getMessage(), secKey);
+					//secKey =  gk.decryptAESSecretKey("a4VLr/SriC/7ijxzKsWjxzTuALvT4bZuFErymt4RJpVbymVLQ+marjgbK8ZNML6tc0OAepLD4ulRmZwjhSdGPwvE0QTDKF/28R8ESr1BxpVf16V8TMALCaAVR9JEhlkd4WSfnDYU7s0463bvdWoxHdQYgIeBAEREH3H/5EeNCoJsz6Knns+pXej4tWs0d3zDbeqQUSCWpm9RQ0hXmZCKVyk7eH7+3Urq3Dk7Vp00/cTE+3wkWypoIizoiZNsHiT6VFW8lDiNJh58oVjbgR+KYaBTu01Nz7TN+W2hfsgilPOMXnbUBDE8s7gqPpQJ/7Kftf0Ro03D4RwFZ82rjEO0Sw==".getBytes(), privateKey,"Blowfish");
+					//String message = bf.decryptText("LPpjsbpTjws=", secKey);
 					textArea.append(messages.get(i).getDate_time() + " : [ " + messages.get(i).getSender_name() +" ] : \n");
-					textArea.append(message + " \n ");
+					textArea.append(messages.get(i).getMessage() + " \n ");
 
 				}
 				
@@ -365,7 +333,7 @@ public class GUIChatWindow {
 						Registry creg = LocateRegistry.getRegistry(host);
 						StaticRI cstub = (StaticRI)creg.lookup(regName);
 						
-						System.out.println(cstub.checkNewChat(sender_id, receiver_id));
+						
 						
 						if(cstub.checkNewChat(sender_id, receiver_id)){
 							retrieveNewChat(sender_id, receiver_id);
@@ -383,13 +351,6 @@ public class GUIChatWindow {
 		}
 	}
 	
-	public void stopStatusTread(){
-		timer.cancel();
-		timer.purge();
-		chatTimer.purge();
-		chatTimer.cancel();
-	}
-	
 	public PrivateKey getPrivateKey(String decryptedPrivateKey) throws Exception{
 		
 		byte[] epkey = Base64.decode(decryptedPrivateKey.getBytes());
@@ -398,6 +359,13 @@ public class GUIChatWindow {
 		KeyFactory kf = KeyFactory.getInstance("RSA");
 		PrivateKey privateKey = kf.generatePrivate(new PKCS8EncodedKeySpec(epkey));
 		return privateKey;
+	}
+	
+	public void stopStatusTread(){
+		timer.cancel();
+		timer.purge();
+		chatTimer.cancel();
+		chatTimer.purge();
 	}
 	
 
