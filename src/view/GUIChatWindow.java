@@ -36,6 +36,7 @@ import controller.ChatClient;
 import controller.ChatInterface;
 import controller.ConfigServer;
 import controller.DiffieHellman;
+import controller.DigitalSignature;
 import controller.GenerateKeys;
 import controller.StaticRI;
 import modal.Message;
@@ -122,7 +123,7 @@ public class GUIChatWindow {
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 462, 300);
+		frame.setBounds(100, 100, 449, 300);
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 
@@ -406,6 +407,18 @@ public class GUIChatWindow {
 		}
 	}
 	
-
-
+	public byte[] signDigitalSignature(String plaintext){
+		
+		byte[] digitalSignature = null;
+		try{
+			DigitalSignature ds = new DigitalSignature();
+			PrivateKey privateKey  = ds.getPrivateKey(decryptPrivateKey);
+			byte[] plainByteDS = plaintext.getBytes();
+			digitalSignature = ds.sign(plainByteDS, privateKey);
+			
+		}catch(Exception err1){
+			err1.printStackTrace();
+		}
+		return digitalSignature;
+	}
 }

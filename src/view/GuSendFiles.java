@@ -58,6 +58,7 @@ import controller.DigitalSignature;
 import controller.FileConvert;
 import controller.FileSendingCS;
 import controller.GenerateKeys;
+import controller.HashPassword;
 import controller.RmiTransferClient;
 import rmitransfer.Server;
 import controller.StaticRI;
@@ -548,12 +549,14 @@ public class GuSendFiles {
 					cstub.checkPath(checkPath);
 					fm.setPath(receiverPath);
 					
-					cstub.saveData(method,receiveName,receiverPath,b64DigitalSignature,lMain_Username.getText());
+					
 					
 		        	String url = ftpHost;
+		        	JOptionPane.showMessageDialog(null, url);
 					Server server = (Server) Naming.lookup(url);
 					RmiTransferClient.upload(server, new File(senderPath), new File(receiverPath));
 					RmiTransferClient.upload(server, new File(pathKey), new File(receiverKey));
+					cstub.saveData(method,receiveName,receiverPath,b64DigitalSignature,lMain_Username.getText());
 					//RmiTransferClient.upload(server, new File(saltPath), new File(checkPath+"/salt"));
 					JOptionPane.showMessageDialog(null,"File has been Send.", "Sending", JOptionPane.WARNING_MESSAGE);
 					frame.dispose();
@@ -608,8 +611,11 @@ public class GuSendFiles {
 					 Registry creg = LocateRegistry.getRegistry(host,1099);
 			            StaticRI cstub = (StaticRI)creg.lookup(regName);
 			            encryptedPrivateKey = cstub.getUserEncryptedPrivateKey(lMain_Username.getText());
+			            HashPassword hash = new HashPassword();
+			            int user_id = cstub.getUserId(lMain_Username.getText());
+			            String password_User = cstub.getUserPassword(user_id);
 
-			            decryptPrivateKey = uc.decryptPrivateKey(encryptedPrivateKey,stringPass);
+			            decryptPrivateKey = uc.decryptPrivateKeyNew(encryptedPrivateKey,password_User);
 			            btnEncrypt.setEnabled(true);
 			            btnNewButton_2.setEnabled(false);
 			            //JOptionPane.showMessageDialog(null,"Password not match. Please Try Again", "Encryption", JOptionPane.WARNING_MESSAGE);

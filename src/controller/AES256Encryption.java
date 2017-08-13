@@ -24,14 +24,6 @@ public class AES256Encryption {
          SecretKey skey = kgen.generateKey();
          return skey;
 	}
-	
-	public static SecretKey generateAES192Key() throws NoSuchAlgorithmException{
-		int keyStrength = 256;
-		 KeyGenerator kgen = KeyGenerator.getInstance("AES");
-         kgen.init(keyStrength);
-         SecretKey skey = kgen.generateKey();
-         return skey;
-	}
 	public static SecretKey generateAESPasswordKey(String password, String salt) throws NoSuchAlgorithmException{
 		SecretKey secret = null;
 		byte[] salt2 = salt.getBytes();
@@ -49,6 +41,14 @@ public class AES256Encryption {
 		
 		
 		return secret;
+	}
+	
+	public static SecretKey generateAES192Key() throws NoSuchAlgorithmException{
+		int keyStrength = 256;
+		 KeyGenerator kgen = KeyGenerator.getInstance("AES");
+         kgen.init(keyStrength);
+         SecretKey skey = kgen.generateKey();
+         return skey;
 	}
 
     public static String encrypt (String strKey, String strIv, String str) {
@@ -98,14 +98,12 @@ public class AES256Encryption {
             byte[] key = Base64.decode(strKey.getBytes());
             byte[] iv  = Base64.decode(strIv.getBytes());
 
-
             SecretKeySpec keyspec = new SecretKeySpec(key, "AES");
             IvParameterSpec ivspec = new IvParameterSpec(iv);
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 
             cipher.init(Cipher.DECRYPT_MODE, keyspec,ivspec);
             secret = new String(cipher.doFinal(Base64.decode(str.getBytes())));
-
         }
         catch(Exception e){
             e.printStackTrace();

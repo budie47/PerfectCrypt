@@ -57,5 +57,22 @@ public class UserController {
 		return decryptPrivateKey;
 	}
 	
+	public String decryptPrivateKeyNew(String encryptedKey,String Password) throws Exception{
+		String decryptPrivateKey = "";
+        String strIv = "18A5Z/IsHs6g8/65sBxkCQ==";
+        String strKey = "";
+		
+		AES256Encryption aes = new AES256Encryption();
+        SecretKey skey;
+
+			skey = aes.generateAESPasswordKey(Password,strIv);
+	        byte[] raw = skey.getEncoded();
+	        strKey = new String(Base64.encode(raw));
+	        //System.out.println("STRKey : " +strKey);
+	        decryptPrivateKey = aes.decrypt(strKey,strIv, encryptedKey.trim());
+
+		return decryptPrivateKey;
+	}
+	
 	
 }

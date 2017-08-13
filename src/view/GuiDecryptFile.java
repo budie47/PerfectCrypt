@@ -354,8 +354,13 @@ public class GuiDecryptFile {
 					 Registry creg = LocateRegistry.getRegistry(host,1099);
 			            StaticRI cstub = (StaticRI)creg.lookup(regName);
 			            encryptedPrivateKey = cstub.getUserEncryptedPrivateKey(username);
+			            
+			            int user_id = cstub.getUserId(username);
+			            String password_User = cstub.getUserPassword(user_id);
 
-			            decryptPrivateKey = uc.decryptPrivateKey(encryptedPrivateKey,stringPass);
+			            decryptPrivateKey = uc.decryptPrivateKeyNew(encryptedPrivateKey,password_User);
+
+			            //decryptPrivateKey = uc.decryptPrivateKey(encryptedPrivateKey,stringPass);
 			            btnDecrypt.setEnabled(true);
 			            
 				}catch(Exception e1){

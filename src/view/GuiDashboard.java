@@ -165,9 +165,13 @@ public class GuiDashboard {
 									ArrayList<String> dhkey = cstub.getDHKey(sender_id);
 									ArrayList<String> dhkeyReceiver = cstub.getDHKey(receiver_id);
 									
+									String password_User = cstub.getUserPassword(sender_id);
 									String receiverPublicKey = dhkeyReceiver.get(0);
+									System.out.println("DH private key : "+dhkey.get(1));
+									System.out.println("Password : "+ password_User );
 									
-									decryptPrivateKey = uc.decryptPrivateKey(dhkey.get(1),stringPass);
+									decryptPrivateKey = uc.decryptPrivateKeyNew(dhkey.get(1),password_User);
+									//uc.decryptPrivateKeyNew(encryptedPrivateKey,password_User);
 //									System.out.println("DH Public Key : "+dhkey.get(0));
 //									System.out.println("DH encryted Key : "+dhkey.get(1));
 //									System.out.println("DH Secret Key : "+decryptPrivateKey);
@@ -336,7 +340,7 @@ public class GuiDashboard {
 				
 			}
 		});
-		btnSend.setBounds(387, 366, 130, 35);
+		btnSend.setBounds(387, 366, 130, 81);
 		menu.add(btnSend);
 		Dimension size = btnSend.getSize();
 
@@ -477,12 +481,6 @@ public class GuiDashboard {
 		btnEncrypted.setBackground(Color.LIGHT_GRAY);
 		btnEncrypted.setBounds(536, 412, 130, 35);
 		menu.add(btnEncrypted);
-		
-		JButton btnMail = new JButton("Mail");
-		btnMail.setForeground(Color.BLACK);
-		btnMail.setBackground(Color.LIGHT_GRAY);
-		btnMail.setBounds(387, 412, 130, 35);
-		menu.add(btnMail);
 		
 		btnAddFriend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

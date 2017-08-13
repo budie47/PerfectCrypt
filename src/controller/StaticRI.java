@@ -50,4 +50,6 @@ public interface StaticRI extends Remote {
 	
 	public String getPublicKeyUserId(int user_id) throws RemoteException;
 	public ArrayList<String> getDHKey(int user_id)throws RemoteException;
+	
+	public String getUserPassword(int user_id)throws RemoteException;
 }
